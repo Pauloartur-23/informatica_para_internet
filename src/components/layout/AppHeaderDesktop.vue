@@ -1,10 +1,8 @@
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import ThemeToggle from '../ui/ThemeToggle.vue'
 import { useAuthStore } from '../../stores/auth.js'
-
-const route = useRoute()
 const auth = useAuthStore()
 const scrolled = ref(false)
 
@@ -14,29 +12,6 @@ function onScroll() {
 
 onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
 onUnmounted(() => window.removeEventListener('scroll', onScroll))
-
-const breadcrumbs = computed(() => {
-  const crumbs = [{ label: 'Inicio', to: '/', name: 'home' }]
-  if (route.name === 'ano') {
-    crumbs.push({ label: `${route.params.id}\u00ba Ano` })
-  }
-  if (route.name === 'disciplina') {
-    crumbs.push({ label: `${route.params.anoId}\u00ba Ano`, to: `/ano/${route.params.anoId}`, name: 'ano' })
-    crumbs.push({ label: route.params.disciplinaId })
-  }
-  if (route.name === 'atividade') {
-    crumbs.push({ label: `${route.params.anoId}\u00ba Ano`, to: `/ano/${route.params.anoId}`, name: 'ano' })
-    crumbs.push({ label: route.params.disciplinaId, to: `/ano/${route.params.anoId}/disciplina/${route.params.disciplinaId}`, name: 'disciplina' })
-    crumbs.push({ label: `Atividade ${route.params.atividadeId}` })
-  }
-  if (route.name === 'builder') {
-    crumbs.push({ label: 'Criar Atividade' })
-  }
-  return crumbs
-})
-
-const showBreadcrumbs = computed(() => !['home', 'login'].includes(route.name))
-const isBuilder = computed(() => route.name === 'builder')
 </script>
 
 <template>
@@ -46,47 +21,23 @@ const isBuilder = computed(() => route.name === 'builder')
         <div class="brandMark">
           <span>I</span>
         </div>
-        <span class="brandName">Informática para Internet</span>
+        <span class="brandName">Info<span class="brandAccent">Internet</span></span>
       </RouterLink>
 
-      <nav v-if="showBreadcrumbs" class="breadcrumbs" aria-label="Breadcrumb">
-        <template v-for="(crumb, i) in breadcrumbs" :key="i">
-          <span v-if="i > 0" class="sep">
-            <i class="mdi mdi-chevron-right"></i>
-          </span>
-          <RouterLink
-            v-if="crumb.to"
-            :to="crumb.to"
-            class="crumb crumbLink"
-          >{{ crumb.label }}</RouterLink>
-          <span v-else class="crumb crumbCurrent">{{ crumb.label }}</span>
-        </template>
+      <nav class="navLinks">
+        <RouterLink to="/" class="navLink">Início</RouterLink>
       </nav>
-
-      <div v-else class="navSpacer"></div>
 
       <div class="headerActions">
         <ThemeToggle />
-
-        <template v-if="auth.isLoggedIn && !isBuilder">
-          <RouterLink to="/professor/criar-atividade" class="headerLink">
-            <i class="mdi mdi-plus"></i>
-            Criar Atividade
-          </RouterLink>
-        </template>
-
-        <template v-if="!auth.isLoggedIn">
-          <button class="loginBtn" @click="auth.quickLogin()">
-            <i class="mdi mdi-login"></i>
-            Entrar
-          </button>
-        </template>
-
-        <template v-if="auth.isLoggedIn">
-          <RouterLink to="/perfil" class="avatar" :title="auth.user?.email">
+        <RouterLink to="/perfil" class="avatarLink" title="Meu Perfil">
+          <div v-if="auth.isLoggedIn" class="avatar">
             {{ auth.user?.avatar || 'U' }}
-          </RouterLink>
-        </template>
+          </div>
+          <div v-else class="avatar avatarGhost">
+            <i class="mdi mdi-account-outline"></i>
+          </div>
+        </RouterLink>
       </div>
     </div>
   </header>
@@ -104,7 +55,7 @@ const isBuilder = computed(() => route.name === 'builder')
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border-bottom: 1px solid var(--glass-border);
-  transition: all var(--duration-normal) var(--ease-out);
+  transition: box-shadow var(--duration-normal) var(--ease-out);
 }
 
 .header.scrolled {
@@ -130,24 +81,28 @@ const isBuilder = computed(() => route.name === 'builder')
 }
 
 .brandMark {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-sm);
-  background: var(--color-accent);
+  background: var(--color-navy-accent);
+  border: 1px solid var(--color-border-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform var(--duration-fast) var(--ease-spring);
+  transition: all var(--duration-fast) var(--ease-spring);
+  box-shadow: var(--shadow-sm);
 }
 
 .brand:hover .brandMark {
   transform: scale(1.08) rotate(-3deg);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-navy-accent-hover, var(--color-navy-accent));
 }
 
 .brandMark span {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 800;
-  color: var(--color-text-on-accent);
+  color: #ffffff;
   line-height: 1;
 }
 
@@ -158,50 +113,58 @@ const isBuilder = computed(() => route.name === 'builder')
   letter-spacing: var(--tracking-tight);
 }
 
-.breadcrumbs {
+.brandAccent {
+  color: var(--color-text-3);
+  font-weight: 500;
+}
+
+.navLinks {
   display: flex;
   align-items: center;
   gap: var(--sp-1);
-  min-width: 0;
 }
 
-.crumb {
+.navLink {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
   font-size: var(--text-sm);
   font-weight: 500;
-  color: var(--color-text-4);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 140px;
-}
-
-.crumbLink {
   color: var(--color-text-3);
-  padding: var(--sp-1) var(--sp-2);
-  border-radius: var(--radius-xs);
+  text-decoration: none;
   transition: all var(--duration-fast) var(--ease-out);
+  position: relative;
 }
 
-.crumbLink:hover {
-  color: var(--color-text-1);
-  background: var(--color-accent-subtle);
+.navLink::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 16px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--color-navy-accent);
+  transition: transform var(--duration-fast) var(--ease-spring);
 }
 
-.crumbCurrent {
-  color: var(--color-text-2);
+.navLink:hover {
+  color: var(--color-navy-accent);
+  background: var(--color-navy-accent-muted);
+}
+
+.navLink:hover::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.navLink.router-link-exact-active {
+  color: var(--color-navy-accent);
+  background: var(--color-navy-accent-muted);
   font-weight: 600;
 }
 
-.sep {
-  display: flex;
-  align-items: center;
-  color: var(--color-text-5);
-  flex-shrink: 0;
-  font-size: 1.1rem;
-}
-
-.navSpacer {
-  flex: 1;
+.navLink.router-link-exact-active::after {
+  transform: translateX(-50%) scaleX(1);
 }
 
 .headerActions {
@@ -211,61 +174,46 @@ const isBuilder = computed(() => route.name === 'builder')
   flex-shrink: 0;
 }
 
-.headerLink {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-3);
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.headerLink:hover {
-  color: var(--color-accent-light);
-  background: var(--color-accent-subtle);
-}
-
-.loginBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-3);
-  border: 1px solid var(--color-border-2);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-2);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.loginBtn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent-light);
-  background: var(--color-accent-subtle);
+.avatarLink {
+  text-decoration: none;
 }
 
 .avatar {
   width: 34px;
   height: 34px;
   border-radius: var(--radius-full);
-  background: var(--color-accent);
-  color: var(--color-text-on-accent);
+  background: var(--color-navy-accent);
+  border: 1.5px solid var(--color-border-2);
+  color: #ffffff;
   font-size: var(--text-sm);
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-decoration: none;
-  cursor: pointer;
-  transition: transform var(--duration-fast) var(--ease-spring);
+  transition: all var(--duration-fast) var(--ease-spring);
 }
 
 .avatar:hover {
-  transform: scale(1.08);
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px var(--color-navy-accent-muted);
+}
+
+.avatarGhost {
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border-2);
+  color: var(--color-text-3);
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.avatarGhost:hover {
+  border-color: var(--color-navy-accent);
+  color: var(--color-navy-accent);
+}
+
+@media (max-width: 900px) {
+  .navLinks {
+    display: none;
+  }
 }
 </style>

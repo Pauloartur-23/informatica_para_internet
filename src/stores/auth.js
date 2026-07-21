@@ -1,37 +1,49 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
+const STORAGE_KEY = 'sio-user'
+
+function loadUser() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    localStorage.removeItem(STORAGE_KEY)
+    return null
+  }
+}
+
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(JSON.parse(localStorage.getItem('sio-user') || 'null'))
+  const user = ref(loadUser())
   const isLoggedIn = computed(() => !!user.value)
 
   function login(email, password) {
-    if (email && password) {
-      user.value = {
-        nome: email.split('@')[0],
-        email,
-        avatar: email.charAt(0).toUpperCase(),
-      }
-      localStorage.setItem('sio-user', JSON.stringify(user.value))
-      return true
+    if (!email || !password) return false
+
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    if (!validEmail) return false
+
+    user.value = {
+      nome: email.split('@')[0],
+      email,
+      avatar: email.charAt(0).toUpperCase(),
     }
-    return false
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user.value))
+    return true
   }
 
   function quickLogin() {
-    const id = Math.random().toString(36).slice(2, 8)
-    const email = `monitoria@ifc.edu.br`
     user.value = {
       nome: 'Monitoria',
-      email,
+      email: 'monitoria@ifc.edu.br',
       avatar: 'M',
     }
-    localStorage.setItem('sio-user', JSON.stringify(user.value))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user.value))
   }
 
   function logout() {
     user.value = null
-    localStorage.removeItem('sio-user')
+    localStorage.removeItem(STORAGE_KEY)
   }
 
   return { user, isLoggedIn, login, quickLogin, logout }

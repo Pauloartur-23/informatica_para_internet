@@ -1,122 +1,159 @@
-  <script setup>
-  import { RouterView, useRoute } from 'vue-router'
-  import { computed } from 'vue'
-  import AppHeader from './components/layout/AppHeader.vue'
-  import AppFooter from './components/layout/AppFooter.vue'
+<script setup>
+import { RouterView, useRoute } from 'vue-router'
+import { computed } from 'vue'
+import AppHeader from './components/layout/AppHeader.vue'
+import AppFooter from './components/layout/AppFooter.vue'
 
-  const route = useRoute()
-  const pageKey = computed(() => route.fullPath)
-  const isHome = computed(() => route.name === 'home')
-  const isAuth = computed(() => ['login', 'builder'].includes(route.name))
-  </script>
+const route = useRoute()
+const pageKey = computed(() => route.fullPath)
+const isHome = computed(() => route.name === 'home')
+</script>
 
-  <template>
-    <div class="app" :class="{ 'is-home': isHome, 'is-auth': isAuth }">
-      <AppHeader />
-      <main class="main">
-        <RouterView v-slot="{ Component }">
-          <Transition name="page" mode="out-in">
-            <component :is="Component" :key="pageKey" />
-          </Transition>
-        </RouterView>
-      </main>
-      <AppFooter v-if="!isHome && !isAuth" />
-    </div>
-  </template>
+<template>
+  <div class="app" :class="{ 'is-home': isHome }">
+    <AppHeader />
+    <main class="main">
+      <RouterView v-slot="{ Component }">
+        <Transition name="page" mode="out-in">
+          <component :is="Component" :key="pageKey" />
+        </Transition>
+      </RouterView>
+    </main>
+    <AppFooter />
+  </div>
+</template>
 
-  <style>
-  .app {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
+<style>
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  .main {
-    flex: 1;
-  }
+.main {
+  flex: 1;
+  min-height: calc(100vh - var(--header-h));
+}
 
-  .page-enter-active {
-    transition: opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out);
-  }
+/* Page transitions */
+.page-enter-active {
+  transition:
+    opacity 0.4s var(--ease-out),
+    transform 0.4s var(--ease-out),
+    filter 0.4s var(--ease-out);
+}
 
-  .page-leave-active {
-    transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out);
-  }
+.page-leave-active {
+  transition:
+    opacity 0.2s var(--ease-out),
+    transform 0.2s var(--ease-out),
+    filter 0.2s var(--ease-out);
+}
 
-  .page-enter-from {
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(16px);
+  filter: blur(4px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+  filter: blur(2px);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(24px);
   }
-
-  .page-leave-to {
-    opacity: 0;
-    transform: translateY(-8px);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
 
-  .fade-enter-active,
-  .fade-leave-active {
-    transition: opacity 0.25s var(--ease-out);
-  }
-
-  .fade-enter-from,
-  .fade-leave-to {
+@keyframes fadeIn {
+  from {
     opacity: 0;
   }
-
-  .slide-up-enter-active {
-    transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+  to {
+    opacity: 1;
   }
+}
 
-  .slide-up-leave-active {
-    transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out);
-  }
-
-  .slide-up-enter-from {
+@keyframes scaleIn {
+  from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: scale(0.92);
   }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
 
-  .slide-up-leave-to {
+@keyframes slideInLeft {
+  from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateX(-20px);
   }
-
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
+}
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
   }
-
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.92); }
-    to { opacity: 1; transform: scale(1); }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
+}
 
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s var(--ease-out) both;
+}
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-12px); }
-  }
+.animate-fade-in {
+  animation: fadeIn 0.5s var(--ease-out) both;
+}
 
-  @keyframes pulse-glow {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.8; }
-  }
+.animate-scale-in {
+  animation: scaleIn 0.5s var(--ease-out) both;
+}
 
-  .stagger-1 { animation-delay: 0.05s; }
-  .stagger-2 { animation-delay: 0.1s; }
-  .stagger-3 { animation-delay: 0.15s; }
-  .stagger-4 { animation-delay: 0.2s; }
-  .stagger-5 { animation-delay: 0.25s; }
-  .stagger-6 { animation-delay: 0.3s; }
-  .stagger-7 { animation-delay: 0.35s; }
-  .stagger-8 { animation-delay: 0.4s; }
-  </style>
+.animate-slide-in-left {
+  animation: slideInLeft 0.5s var(--ease-out) both;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s var(--ease-out) both;
+}
+
+.delay-1 {
+  animation-delay: 0.1s;
+}
+
+.delay-2 {
+  animation-delay: 0.2s;
+}
+
+.delay-3 {
+  animation-delay: 0.3s;
+}
+
+.delay-4 {
+  animation-delay: 0.4s;
+}
+
+.delay-5 {
+  animation-delay: 0.5s;
+}
+</style>

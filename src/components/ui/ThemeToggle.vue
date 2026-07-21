@@ -1,111 +1,61 @@
 <script setup>
 import { useTheme } from '../../composables/useTheme.js'
+
 const { isDark, toggleTheme } = useTheme()
 </script>
 
 <template>
   <button
-    class="toggle"
+    class="themeBtn"
     :aria-label="isDark ? 'Ativar tema claro' : 'Ativar tema escuro'"
     @click="toggleTheme"
   >
-    <span class="toggleTrack" :class="{ dark: isDark }">
-      <span class="toggleThumb">
-        <Transition name="icon" mode="out-in">
-          <span
-            v-if="isDark"
-            key="sun"
-            :size="0.75"
-            class="mdi mdi-weather-sunny"
-          ></span>
-
-          <span
-            v-else
-            key="moon"
-            :size="0.75"
-            class="mdi mdi-weather-night"
-          ></span>
-        </Transition>
-      </span>
-    </span>
+    <Transition name="icon" mode="out-in">
+      <i v-if="isDark" key="sun" class="mdi mdi-weather-sunny"></i>
+      <i v-else key="moon" class="mdi mdi-weather-night"></i>
+    </Transition>
   </button>
 </template>
 
 <style scoped>
-.toggle {
-  position: relative;
-  padding: 2px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.toggleTrack {
-  display: flex;
-  align-items: center;
-  width: 52px;
-  height: 28px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-3);
-  border: 1px solid var(--color-border-2);
-  padding: 2px;
-  transition: all var(--duration-normal) var(--ease-out);
-}
-
-.toggleTrack.dark {
-  background: var(--color-accent-muted);
-  border-color: var(--color-accent);
-}
-
-.toggleThumb {
+.themeBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--color-text-1);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--duration-normal) var(--ease-spring);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border-2);
+  color: var(--color-text-2);
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
 }
 
-.toggleTrack.dark .toggleThumb {
-  transform: translateX(24px);
-  background: var(--color-accent);
+.themeBtn:hover {
+  background: var(--color-navy-accent-muted);
+  border-color: var(--color-navy-accent);
+  color: var(--color-navy-accent);
+  box-shadow: var(--shadow-glow-sm);
 }
 
-.mdi {
-  color: var(--color-primary);
-}
-
-.mdi-enter-active {
+.icon-enter-active {
   transition: all 0.2s var(--ease-spring);
 }
 
-.mdi-leave-active {
+.icon-leave-active {
   transition: all 0.15s ease-in;
 }
 
-.mdi-enter-from {
+.icon-enter-from {
   opacity: 0;
   transform: scale(0.5) rotate(-90deg);
 }
 
-.mdi-leave-to {
+.icon-leave-to {
   opacity: 0;
   transform: scale(0.5) rotate(90deg);
-}
-
-.toggle:hover .toggleTrack {
-  box-shadow: var(--shadow-glow-sm);
-}
-
-.toggle:active .toggleThumb {
-  width: 26px;
-}
-
-.toggleTrack.dark:active .toggleThumb {
-  transform: translateX(20px);
 }
 </style>
