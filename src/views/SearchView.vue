@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { searchAtividades } from '../data/disciplinas.js'
+import { searchAtividades, anos } from '../data/disciplinas.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,6 +9,7 @@ const router = useRouter()
 const searchQuery = ref(route.query.q || '')
 const results = computed(() => searchAtividades(searchQuery.value))
 const hasSearched = computed(() => searchQuery.value.trim().length >= 2)
+const isFocused = ref(false)
 
 function doSearch() {
   const q = searchQuery.value.trim()
@@ -17,6 +18,11 @@ function doSearch() {
   } else {
     router.replace({ query: {} })
   }
+}
+
+function clearSearch() {
+  searchQuery.value = ''
+  router.replace({ query: {} })
 }
 
 watch(
@@ -28,11 +34,13 @@ watch(
   },
 )
 
-onMounted(() => {
-  if (searchQuery.value.trim().length >= 2) {
-    doSearch()
-  }
-})
+const anosList = Object.entries(anos).map(([id, ano]) => ({
+  id,
+  label: ano.label,
+  desc: ano.desc,
+  icon: id === '1' ? 'mdi-numeric-1-box' : id === '2' ? 'mdi-numeric-2-box' : 'mdi-numeric-3-box',
+  disciplinas: ano.disciplinas,
+}))
 </script>
 
 <template>
@@ -46,86 +54,107 @@ onMounted(() => {
     </div>
 
     <div class="searchContent">
-      <div class="searchHeader animate-fade-in-up">
-        <div class="searchIconBig">
+      <div class="searchHero animate-fade-in-up">
+        <div class="heroIcon" :class="{ focused: isFocused }">
           <i class="mdi mdi-magnify"></i>
         </div>
-        <h1 class="searchTitle">Buscar Atividades</h1>
-        <p class="searchSubtitle">Encontre atividades e conteúdos rapidamente.</p>
+        <h1 class="heroTitle">Buscar</h1>
+        <p class="heroDesc">Pesquise por disciplinas ou navegue pelos anos do curso.</p>
       </div>
 
       <form class="searchBar animate-fade-in-up delay-1" @submit.prevent="doSearch">
-        <div class="searchInputWrap">
+        <div class="searchInputWrap" :class="{ focused: isFocused }">
           <i class="mdi mdi-magnify searchIcon"></i>
           <input
             v-model="searchQuery"
             type="text"
             class="searchInput"
-            placeholder="Buscar por título, descrição ou conteúdo..."
+            placeholder="Buscar atividades..."
             autofocus
+            @focus="isFocused = true"
+            @blur="isFocused = false"
           />
           <button
             v-if="searchQuery"
             type="button"
             class="clearBtn"
-            @click="searchQuery = ''; router.replace({ query: {} })"
+            @click="clearSearch"
           >
             <i class="mdi mdi-close"></i>
-          </button>
-          <button type="submit" class="submitBtn">
-            <i class="mdi mdi-arrow-right"></i>
           </button>
         </div>
       </form>
 
       <div v-if="hasSearched" class="searchResults animate-fade-in-up delay-2">
-        <p class="resultCount">
-          {{ results.length }} resultado{{ results.length !== 1 ? 's' : '' }} encontrado{{ results.length !== 1 ? 's' : '' }}
-        </p>
+        <div class="resultsHeader">
+          <span class="resultsCount">
+            {{ results.length }} resultado{{ results.length !== 1 ? 's' : '' }}
+          </span>
+        </div>
 
         <div v-if="results.length" class="resultsList">
           <RouterLink
             v-for="(r, idx) in results"
             :key="`${r.disciplina.id}-${r.atividade.id}`"
             :to="`/atividade/${r.disciplina.id}/${r.atividade.id}`"
-            class="resultCard animate-fade-in-up"
-            :class="`delay-${Math.min(idx + 1, 5)}`"
+            class="resultItem"
           >
-            <div class="resultMeta">
-              <span class="resultAno">{{ r.anoLabel }}</span>
-              <i class="mdi mdi-chevron-right"></i>
-              <span class="resultDisc">{{ r.disciplina.name }}</span>
+            <div class="resultLeft">
+              <div class="resultIcon">
+                <i :class="`mdi ${r.disciplina.icon}`"></i>
+              </div>
+              <div class="resultInfo">
+                <span class="resultBreadcrumb">{{ r.anoLabel }} / {{ r.disciplina.name }}</span>
+                <h3 class="resultTitle">{{ r.atividade.title }}</h3>
+                <p class="resultDesc">{{ r.atividade.desc }}</p>
+              </div>
             </div>
-            <h3 class="resultTitle">{{ r.atividade.title }}</h3>
-            <p class="resultDesc">{{ r.atividade.desc }}</p>
-            <div class="resultFooter">
-              <span class="resultQuestions">
-                <i class="mdi mdi-help-circle-outline"></i>
-                {{ r.atividade.questoes.length }} questão{{ r.atividade.questoes.length > 1 ? 's' : '' }}
-              </span>
-              <span class="resultLink">
-                Ver atividade
-                <i class="mdi mdi-arrow-right"></i>
-              </span>
-            </div>
+            <i class="mdi mdi-chevron-right resultArrow"></i>
           </RouterLink>
         </div>
 
-        <div v-else class="noResults">
-          <div class="emptyStateIcon">
-            <i class="mdi mdi-magnify-close"></i>
+        <div v-else class="emptyResult">
+          <div class="emptyIcon">
+            <i class="mdi mdi-text-search"></i>
           </div>
-          <h3>Nenhum resultado encontrado</h3>
-          <p>Tente buscar com outros termos ou verifique a ortografia.</p>
+          <h3>Nenhum resultado</h3>
+          <p>Não encontramos nada para "<strong>{{ searchQuery }}</strong>". Tente outros termos.</p>
         </div>
       </div>
 
-      <div v-else class="searchEmpty animate-fade-in-up delay-2">
-        <div class="emptyStateIcon">
-          <i class="mdi mdi-magnify"></i>
+      <div v-else class="browseSection animate-fade-in-up delay-2">
+        <h2 class="sectionTitle">Navegar por Ano</h2>
+
+        <div class="anosGrid">
+          <div
+            v-for="(ano, idx) in anosList"
+            :key="ano.id"
+            class="anoBlock"
+          >
+            <RouterLink :to="`/ano/${ano.id}`" class="anoHeader">
+              <div class="anoIcon">
+                <i :class="`mdi ${ano.icon}`"></i>
+              </div>
+              <div class="anoInfo">
+                <h3 class="anoLabel">{{ ano.label }}</h3>
+                <p class="anoDesc">{{ ano.desc }}</p>
+              </div>
+              <i class="mdi mdi-chevron-right anoArrow"></i>
+            </RouterLink>
+
+            <div class="disciplinasList">
+              <RouterLink
+                v-for="disc in ano.disciplinas"
+                :key="disc.id"
+                :to="`/disciplina/${ano.id}/${disc.id}`"
+                class="discLink"
+              >
+                <i :class="`mdi ${disc.icon}`"></i>
+                <span>{{ disc.name }}</span>
+              </RouterLink>
+            </div>
+          </div>
         </div>
-        <h3>Digite pelo menos 2 caracteres para buscar</h3>
-        <p>Pesquise por títulos de atividades, descrições ou conteúdo das questões.</p>
       </div>
     </div>
   </div>
@@ -142,57 +171,63 @@ onMounted(() => {
   z-index: 1;
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: var(--sp-8) var(--sp-6);
+  padding: var(--sp-10) var(--sp-6);
 }
 
-.searchHeader {
+.searchHero {
   text-align: center;
   margin-bottom: var(--sp-8);
 }
 
-.searchIconBig {
+.heroIcon {
   width: 72px;
   height: 72px;
-  border-radius: var(--radius-full);
-  background: var(--color-navy-accent-muted);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-2);
   border: 1px solid var(--color-border-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto var(--sp-5);
+  margin: 0 auto var(--sp-6);
   transition: all var(--duration-normal) var(--ease-spring);
 }
 
-.searchIconBig i {
+.heroIcon.focused {
+  background: var(--color-navy-accent);
+  border-color: var(--color-navy-accent);
+  box-shadow: 0 0 32px rgba(74, 111, 165, 0.3);
+  transform: scale(1.08);
+}
+
+.heroIcon i {
   font-size: 2rem;
   color: var(--color-navy-accent);
-  transition: transform var(--duration-normal) var(--ease-spring);
+  transition: all var(--duration-normal) var(--ease-spring);
 }
 
-.searchHeader:hover .searchIconBig {
-  transform: scale(1.08) rotate(-3deg);
-  box-shadow: 0 0 24px rgba(74, 111, 165, 0.2);
-}
-
-.searchHeader:hover .searchIconBig i {
+.heroIcon.focused i {
+  color: #ffffff;
   transform: scale(1.1);
 }
 
-.searchTitle {
-  font-size: var(--text-3xl);
+.heroTitle {
+  font-size: var(--text-4xl);
   font-weight: 800;
   color: var(--color-text-1);
   letter-spacing: var(--tracking-tight);
-  margin-bottom: var(--sp-2);
+  margin-bottom: var(--sp-3);
 }
 
-.searchSubtitle {
+.heroDesc {
   font-size: var(--text-base);
   color: var(--color-text-4);
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .searchBar {
-  margin-bottom: var(--sp-8);
+  max-width: 600px;
+  margin: 0 auto var(--sp-10);
 }
 
 .searchInputWrap {
@@ -200,16 +235,16 @@ onMounted(() => {
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-4) var(--sp-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   background: var(--color-surface-2);
-  border: 1px solid var(--color-border-2);
+  border: 2px solid var(--color-border-1);
   transition: all var(--duration-normal) var(--ease-spring);
 }
 
-.searchInputWrap:focus-within {
+.searchInputWrap.focused {
   border-color: var(--color-navy-accent);
-  box-shadow: 0 0 0 3px var(--color-navy-accent-muted), var(--shadow-md);
-  transform: translateY(-2px);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 4px var(--color-navy-accent-muted), var(--shadow-lg);
 }
 
 .searchIcon {
@@ -219,7 +254,7 @@ onMounted(() => {
   transition: color var(--duration-fast) var(--ease-out);
 }
 
-.searchInputWrap:focus-within .searchIcon {
+.searchInputWrap.focused .searchIcon {
   color: var(--color-navy-accent);
 }
 
@@ -238,8 +273,8 @@ onMounted(() => {
 }
 
 .clearBtn {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-full);
   background: var(--color-surface-4);
   border: none;
@@ -258,31 +293,14 @@ onMounted(() => {
   transform: scale(1.1);
 }
 
-.submitBtn {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  background: var(--color-navy);
-  border: none;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--duration-normal) var(--ease-spring);
-  flex-shrink: 0;
-}
-
-.submitBtn:hover {
-  background: var(--color-navy-light);
-  transform: scale(1.08);
-  box-shadow: 0 0 16px rgba(74, 111, 165, 0.3);
-}
-
-.resultCount {
-  font-size: var(--text-sm);
-  color: var(--color-text-4);
+.resultsHeader {
   margin-bottom: var(--sp-4);
+}
+
+.resultsCount {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-4);
 }
 
 .resultsList {
@@ -291,87 +309,81 @@ onMounted(() => {
   gap: var(--sp-3);
 }
 
-.resultCard {
+.resultItem {
   display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
   padding: var(--sp-5) var(--sp-6);
   border-radius: var(--radius-lg);
   background: var(--color-surface-2);
   border: 1px solid var(--color-border-1);
   text-decoration: none;
   transition: all var(--duration-normal) var(--ease-spring);
-  position: relative;
-  overflow: hidden;
 }
 
-.resultCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(180deg, var(--color-navy-accent), transparent);
-  opacity: 0;
-  transition: opacity var(--duration-fast) var(--ease-out);
-}
-
-.resultCard::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 160px;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(74, 111, 165, 0.02), transparent);
-  opacity: 0;
-  transition: opacity var(--duration-normal) var(--ease-out);
-  pointer-events: none;
-}
-
-.resultCard:hover {
+.resultItem:hover {
   background: var(--color-surface-3);
   border-color: var(--color-border-2);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md), 0 0 20px rgba(74, 111, 165, 0.05);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
 }
 
-.resultCard:hover::before {
-  opacity: 1;
+.resultLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  min-width: 0;
+  flex: 1;
 }
 
-.resultCard:hover::after {
-  opacity: 1;
-}
-
-.resultMeta {
+.resultIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-navy-accent-muted);
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.resultIcon i {
+  font-size: 1.1rem;
+  color: var(--color-navy-accent);
+}
+
+.resultItem:hover .resultIcon {
+  background: var(--color-navy-accent);
+  transform: scale(1.08) rotate(-3deg);
+  box-shadow: 0 0 16px rgba(74, 111, 165, 0.3);
+}
+
+.resultItem:hover .resultIcon i {
+  color: #ffffff;
+}
+
+.resultInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.resultBreadcrumb {
   font-size: var(--text-xs);
-  color: var(--color-text-5);
+  font-weight: 500;
+  color: var(--color-navy-accent);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wider);
-}
-
-.resultAno {
-  color: var(--color-navy-accent);
-  font-weight: 600;
-}
-
-.resultMeta i {
-  font-size: 0.7rem;
-}
-
-.resultDisc {
-  font-weight: 600;
+  display: block;
+  margin-bottom: var(--sp-1);
 }
 
 .resultTitle {
   font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-1);
+  margin-bottom: var(--sp-1);
 }
 
 .resultDesc {
@@ -380,45 +392,19 @@ onMounted(() => {
   line-height: var(--leading-normal);
 }
 
-.resultFooter {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: var(--sp-2);
-}
-
-.resultQuestions {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-  font-size: var(--text-xs);
+.resultArrow {
+  font-size: 1.2rem;
   color: var(--color-text-5);
+  flex-shrink: 0;
+  transition: all var(--duration-normal) var(--ease-spring);
 }
 
-.resultQuestions i {
+.resultItem:hover .resultArrow {
   color: var(--color-navy-accent);
-}
-
-.resultLink {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-navy-accent);
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.resultLink i {
-  transition: transform var(--duration-fast) var(--ease-spring);
-}
-
-.resultCard:hover .resultLink i {
   transform: translateX(4px);
 }
 
-.noResults,
-.searchEmpty {
+.emptyResult {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -427,7 +413,7 @@ onMounted(() => {
   padding: var(--sp-16) var(--sp-6);
 }
 
-.emptyStateIcon {
+.emptyIcon {
   width: 80px;
   height: 80px;
   border-radius: var(--radius-full);
@@ -438,30 +424,178 @@ onMounted(() => {
   justify-content: center;
 }
 
-.emptyStateIcon i {
-  font-size: 2.2rem;
+.emptyIcon i {
+  font-size: 2rem;
   color: var(--color-text-5);
 }
 
-.noResults h3,
-.searchEmpty h3 {
+.emptyResult h3 {
   font-size: var(--text-lg);
   font-weight: 700;
   color: var(--color-text-1);
 }
 
-.noResults p,
-.searchEmpty p {
+.emptyResult p {
   font-size: var(--text-sm);
   color: var(--color-text-4);
 }
 
+.browseSection {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text-1);
+  margin-bottom: var(--sp-6);
+  text-align: center;
+}
+
+.anosGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.anoBlock {
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-1);
+  overflow: hidden;
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.anoBlock:hover {
+  border-color: var(--color-border-2);
+  box-shadow: var(--shadow-md);
+}
+
+.anoHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5) var(--sp-6);
+  text-decoration: none;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.anoHeader:hover {
+  background: var(--color-surface-3);
+}
+
+.anoIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: var(--color-navy-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.anoIcon i {
+  font-size: 1.4rem;
+  color: #ffffff;
+}
+
+.anoHeader:hover .anoIcon {
+  transform: scale(1.08) rotate(-3deg);
+  box-shadow: 0 0 20px rgba(74, 111, 165, 0.4);
+}
+
+.anoInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.anoLabel {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text-1);
+  margin-bottom: var(--sp-1);
+}
+
+.anoDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-4);
+  line-height: var(--leading-normal);
+}
+
+.anoArrow {
+  font-size: 1.3rem;
+  color: var(--color-text-5);
+  flex-shrink: 0;
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.anoHeader:hover .anoArrow {
+  color: var(--color-navy-accent);
+  transform: translateX(4px);
+}
+
+.disciplinasList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1px;
+  background: var(--color-border-1);
+  border-top: 1px solid var(--color-border-1);
+}
+
+.discLink {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-6);
+  background: var(--color-surface-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-3);
+  text-decoration: none;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.discLink:hover {
+  background: var(--color-navy-accent-muted);
+  color: var(--color-navy-accent);
+}
+
+.discLink i {
+  font-size: 1.1rem;
+  color: var(--color-text-5);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.discLink:hover i {
+  color: var(--color-navy-accent);
+}
+
 @media (max-width: 480px) {
-  .searchTitle {
-    font-size: var(--text-2xl);
+  .heroTitle {
+    font-size: var(--text-3xl);
   }
 
-  .resultCard {
+  .anoHeader {
+    padding: var(--sp-4);
+  }
+
+  .anoIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .anoIcon i {
+    font-size: 1.2rem;
+  }
+
+  .disciplinasList {
+    grid-template-columns: 1fr;
+  }
+
+  .resultItem {
     padding: var(--sp-4);
   }
 }

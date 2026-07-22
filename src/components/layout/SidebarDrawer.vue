@@ -2,6 +2,7 @@
 import { RouterLink, useRoute } from 'vue-router'
 import ThemeToggle from '../ui/ThemeToggle.vue'
 import { useAuthStore } from '../../stores/auth.js'
+import { anos } from '../../data/disciplinas.js'
 
 defineProps({
   open: Boolean,
@@ -14,6 +15,13 @@ const auth = useAuthStore()
 function isActive(path) {
   return route.path === path
 }
+
+const anosList = Object.entries(anos).map(([id, ano]) => ({
+  id,
+  label: ano.label,
+  desc: ano.desc,
+  icon: id === '1' ? 'mdi-numeric-1-box-outline' : id === '2' ? 'mdi-numeric-2-box-outline' : 'mdi-numeric-3-box-outline',
+}))
 </script>
 
 <template>
@@ -47,6 +55,40 @@ function isActive(path) {
             <i class="mdi mdi-home-outline"></i>
             Início
           </RouterLink>
+
+          <RouterLink
+            to="/anos"
+            class="sidebarLink"
+            :class="{ active: isActive('/anos') }"
+            @click="emit('close')"
+          >
+            <i class="mdi mdi-school-outline"></i>
+            Anos
+          </RouterLink>
+
+          <RouterLink
+            v-for="ano in anosList"
+            :key="ano.id"
+            :to="`/ano/${ano.id}`"
+            class="sidebarLink sidebarLinkSub"
+            :class="{ active: isActive(`/ano/${ano.id}`) }"
+            @click="emit('close')"
+          >
+            <i :class="`mdi ${ano.icon}`"></i>
+            {{ ano.label }}
+          </RouterLink>
+
+          <RouterLink
+            to="/buscar"
+            class="sidebarLink"
+            :class="{ active: isActive('/buscar') }"
+            @click="emit('close')"
+          >
+            <i class="mdi mdi-magnify"></i>
+            Buscar
+          </RouterLink>
+
+          <div class="sidebarDivider"></div>
 
           <RouterLink
             to="/perfil"
@@ -232,10 +274,25 @@ function isActive(path) {
   transform: translateY(-50%) scaleY(1);
 }
 
+.sidebarLinkSub {
+  padding-left: var(--sp-8);
+  font-size: var(--text-sm);
+}
+
+.sidebarDivider {
+  height: 1px;
+  margin: var(--sp-3) var(--sp-4);
+  background: var(--color-border-1);
+}
+
 .sidebarLink i {
   flex-shrink: 0;
   font-size: 1.2rem;
   color: var(--color-text-4);
+}
+
+.sidebarLinkSub i {
+  font-size: 1rem;
 }
 
 .sidebarLink:hover i,
