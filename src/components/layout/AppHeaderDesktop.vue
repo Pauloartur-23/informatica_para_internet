@@ -1,17 +1,28 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import ThemeToggle from '../ui/ThemeToggle.vue'
 import { useAuthStore } from '../../stores/auth.js'
+
 const auth = useAuthStore()
+const router = useRouter()
 const scrolled = ref(false)
 
 function onScroll() {
   scrolled.value = window.scrollY > 8
 }
 
-onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
-onUnmounted(() => window.removeEventListener('scroll', onScroll))
+function openSearch() {
+  router.push({ name: 'search' })
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+})
 </script>
 
 <template>
@@ -21,22 +32,36 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
         <div class="brandMark">
           <span>I</span>
         </div>
-        <span class="brandName">Info<span class="brandAccent">Internet</span></span>
+        <div class="brandText">
+          <span class="brandName">Info<span class="brandAccent">Internet</span></span>
+          <span class="brandDesc">Atividades do Curso Técnico em Informática</span>
+        </div>
       </RouterLink>
 
-      <nav class="navLinks">
-        <RouterLink to="/" class="navLink">Início</RouterLink>
-      </nav>
+      <RouterLink to="/" class="homeBtn">
+        <i class="mdi mdi-home"></i>
+        <span>Home</span>
+      </RouterLink>
 
       <div class="headerActions">
+        <button class="searchBtn" aria-label="Buscar" @click="openSearch">
+          <i class="mdi mdi-magnify"></i>
+        </button>
+
         <ThemeToggle />
-        <RouterLink to="/perfil" class="avatarLink" title="Meu Perfil">
-          <div v-if="auth.isLoggedIn" class="avatar">
-            {{ auth.user?.avatar || 'U' }}
-          </div>
-          <div v-else class="avatar avatarGhost">
-            <i class="mdi mdi-account-outline"></i>
-          </div>
+
+        <RouterLink
+          to="/perfil"
+          class="userBtn"
+          :class="{ loggedIn: auth.isLoggedIn }"
+        >
+          <template v-if="auth.isLoggedIn">
+            <span class="userAvatar">{{ auth.user?.avatar || 'U' }}</span>
+          </template>
+          <template v-else>
+            <i class="mdi mdi-login"></i>
+            <span class="loginLabel">Logar</span>
+          </template>
         </RouterLink>
       </div>
     </div>
@@ -77,7 +102,8 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   align-items: center;
   gap: var(--sp-3);
   text-decoration: none;
-  flex-shrink: 0;
+  flex: 1;
+  justify-content: flex-start;
 }
 
 .brandMark {
@@ -106,11 +132,17 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   line-height: 1;
 }
 
+.brandText {
+  display: flex;
+  flex-direction: column;
+}
+
 .brandName {
   font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-1);
   letter-spacing: var(--tracking-tight);
+  line-height: 1.2;
 }
 
 .brandAccent {
@@ -118,102 +150,119 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   font-weight: 500;
 }
 
-.navLinks {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-}
-
-.navLink {
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-3);
-  text-decoration: none;
-  transition: all var(--duration-fast) var(--ease-out);
-  position: relative;
-}
-
-.navLink::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%) scaleX(0);
-  width: 16px;
-  height: 2px;
-  border-radius: var(--radius-full);
-  background: var(--color-navy-accent);
-  transition: transform var(--duration-fast) var(--ease-spring);
-}
-
-.navLink:hover {
-  color: var(--color-navy-accent);
-  background: var(--color-navy-accent-muted);
-}
-
-.navLink:hover::after {
-  transform: translateX(-50%) scaleX(1);
-}
-
-.navLink.router-link-exact-active {
-  color: var(--color-navy-accent);
-  background: var(--color-navy-accent-muted);
-  font-weight: 600;
-}
-
-.navLink.router-link-exact-active::after {
-  transform: translateX(-50%) scaleX(1);
+.brandDesc {
+  font-size: var(--text-xs);
+  color: var(--color-text-5);
+  line-height: 1.2;
 }
 
 .headerActions {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  flex-shrink: 0;
+  gap: var(--sp-2);
+  flex: 1;
+  justify-content: flex-end;
 }
 
-.avatarLink {
+.homeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-3);
   text-decoration: none;
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
-.avatar {
-  width: 34px;
-  height: 34px;
+.homeBtn:hover {
+  color: var(--color-navy-accent);
+  background: var(--color-navy-accent-muted);
+}
+
+.homeBtn.router-link-exact-active {
+  color: var(--color-navy-accent);
+  background: var(--color-navy-accent-muted);
+}
+
+.searchBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-full);
-  background: var(--color-navy-accent);
-  border: 1.5px solid var(--color-border-2);
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border-2);
+  color: var(--color-text-3);
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.searchBtn:hover {
+  background: var(--color-navy-accent-muted);
+  border-color: var(--color-navy-accent);
+  color: var(--color-navy-accent);
+  box-shadow: var(--shadow-glow-sm);
+}
+
+.userBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border-2);
+  color: var(--color-text-3);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-spring);
+  overflow: hidden;
+}
+
+.userBtn:not(.loggedIn) {
+  padding: 0 var(--sp-4);
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.userBtn:not(.loggedIn):hover {
+  background: var(--color-navy);
+  border-color: var(--color-navy);
+  color: #ffffff;
+  box-shadow: var(--shadow-glow-sm);
+  transform: translateY(-1px);
+}
+
+.userBtn.loggedIn {
+  width: 38px;
+}
+
+.userBtn.loggedIn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px var(--color-navy-accent-muted);
+}
+
+.userAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-navy-accent) 0%, var(--color-navy-lighter) 100%);
   color: #ffffff;
   font-size: var(--text-sm);
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--duration-fast) var(--ease-spring);
+  line-height: 1;
 }
 
-.avatar:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 0 3px var(--color-navy-accent-muted);
-}
-
-.avatarGhost {
-  background: var(--color-surface-3);
-  border: 1px solid var(--color-border-2);
-  color: var(--color-text-3);
-  font-size: 1.1rem;
-  font-weight: 400;
-}
-
-.avatarGhost:hover {
-  border-color: var(--color-navy-accent);
-  color: var(--color-navy-accent);
-}
-
-@media (max-width: 900px) {
-  .navLinks {
-    display: none;
-  }
+.loginLabel {
+  white-space: nowrap;
 }
 </style>

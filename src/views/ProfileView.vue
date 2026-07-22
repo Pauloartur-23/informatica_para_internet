@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useAuthStore } from '../stores/auth.js'
+import { anos, getAtividades } from '../data/disciplinas.js'
 
 const auth = useAuthStore()
 
@@ -13,6 +14,41 @@ const showForm = ref(false)
 const initials = computed(() => {
   if (!auth.user?.nome) return 'U'
   return auth.user.nome.charAt(0).toUpperCase()
+})
+
+const allAtividades = computed(() => {
+  const list = []
+  for (const [anoId, ano] of Object.entries(anos)) {
+    for (const disc of ano.disciplinas) {
+      const lista = getAtividades(disc.id)
+      for (const ativ of lista) {
+        list.push({
+          anoId: Number(anoId),
+          anoLabel: ano.label,
+          disciplina: disc,
+          atividade: ativ,
+        })
+      }
+    }
+  }
+  return list
+})
+
+const stats = computed(() => {
+  let totalDisc = 0
+  let totalAtiv = 0
+  let totalQuest = 0
+  for (const [, ano] of Object.entries(anos)) {
+    totalDisc += ano.disciplinas.length
+    for (const disc of ano.disciplinas) {
+      const lista = getAtividades(disc.id)
+      totalAtiv += lista.length
+      for (const ativ of lista) {
+        totalQuest += ativ.questoes.length
+      }
+    }
+  }
+  return { disciplinas: totalDisc, atividades: totalAtiv, questoes: totalQuest }
 })
 
 watch(
@@ -58,66 +94,96 @@ function handleQuickLogin() {
     <div class="profileGlow profileGlow2"></div>
 
     <Transition name="card-switch" mode="out-in">
-      <div v-if="auth.isLoggedIn" key="logged" class="profileCard">
-        <div class="cardShine"></div>
-
-        <div class="avatarSection">
-          <div class="avatarRing">
-            <div class="avatar">
-              {{ initials }}
+      <div v-if="auth.isLoggedIn" key="logged" class="adminView">
+        <div class="adminHeader">
+          <div class="adminHeaderLeft">
+            <div class="adminUserInfo">
+              <div class="avatarRing">
+                <div class="avatar">{{ initials }}</div>
+              </div>
+              <div class="adminUserText">
+                <h1 class="adminTitle">
+                  <i class="mdi mdi-shield-crown-outline"></i>
+                  Painel Administrativo
+                </h1>
+                <p class="adminUserName">{{ auth.user?.nome || 'Usuário' }}</p>
+                <p class="adminUserEmail">{{ auth.user?.email }}</p>
+              </div>
             </div>
+            <p class="adminSubtitle">Gerencie atividades e conteúdos da plataforma.</p>
           </div>
-          <div class="statusDot"></div>
+          <button class="logoutBtn" @click="handleLogout">
+            <i class="mdi mdi-logout"></i>
+            Sair
+          </button>
         </div>
 
-        <div class="profileInfo">
-          <h1 class="name">{{ auth.user?.nome || 'Usuário' }}</h1>
-          <p class="email">{{ auth.user?.email }}</p>
-          <span class="badge">
-            <i class="mdi mdi-shield-check-outline"></i>
-            Conectado
-          </span>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="profileDetails">
-          <div class="detailRow">
-            <div class="detailIcon">
-              <i class="mdi mdi-school-outline"></i>
-            </div>
-            <div class="detailContent">
-              <span class="detailLabel">Curso</span>
-              <span class="detailValue">Técnico em Informática</span>
+        <div class="statsGrid">
+          <div class="statCard">
+            <div class="statIcon"><i class="mdi mdi-bookshelf"></i></div>
+            <div class="statInfo">
+              <span class="statValue">{{ stats.disciplinas }}</span>
+              <span class="statLabel">Disciplinas</span>
             </div>
           </div>
-          <div class="detailRow">
-            <div class="detailIcon">
-              <i class="mdi mdi-map-marker-outline"></i>
-            </div>
-            <div class="detailContent">
-              <span class="detailLabel">Campus</span>
-              <span class="detailValue">IFC Campus Araquari</span>
+          <div class="statCard">
+            <div class="statIcon"><i class="mdi mdi-file-document-multiple"></i></div>
+            <div class="statInfo">
+              <span class="statValue">{{ stats.atividades }}</span>
+              <span class="statLabel">Atividades</span>
             </div>
           </div>
-          <div class="detailRow">
-            <div class="detailIcon">
-              <i class="mdi mdi-calendar-outline"></i>
-            </div>
-            <div class="detailContent">
-              <span class="detailLabel">Membro desde</span>
-              <span class="detailValue">{{ new Date().getFullYear() }}</span>
+          <div class="statCard">
+            <div class="statIcon"><i class="mdi mdi-help-rhombus"></i></div>
+            <div class="statInfo">
+              <span class="statValue">{{ stats.questoes }}</span>
+              <span class="statLabel">Questões</span>
             </div>
           </div>
         </div>
 
-        <button class="logoutBtn" :class="{ loading: isLoading }" @click="handleLogout" :disabled="isLoading">
-          <Transition name="btn-icon" mode="out-in">
-            <i v-if="isLoading" key="loading" class="mdi mdi-loading mdi-spin"></i>
-            <i v-else key="idle" class="mdi mdi-logout"></i>
-          </Transition>
-          {{ isLoading ? 'Saindo...' : 'Sair da conta' }}
-        </button>
+        <div class="adminSection">
+          <h2 class="sectionTitle">Todas as Atividades</h2>
+          <div class="atividadesAdminList">
+            <div
+              v-for="item in allAtividades"
+              :key="`${item.disciplina.id}-${item.atividade.id}`"
+              class="adminAtivCard"
+            >
+              <div class="adminAtivHeader">
+                <div class="adminAtivMeta">
+                  <span class="adminAtivAno">{{ item.anoLabel }}</span>
+                  <i class="mdi mdi-chevron-right"></i>
+                  <span class="adminAtivDisc">{{ item.disciplina.name }}</span>
+                </div>
+                <div class="adminAtivActions">
+                  <button class="actionBtn editBtn" title="Editar">
+                    <i class="mdi mdi-pencil-outline"></i>
+                  </button>
+                  <button class="actionBtn deleteBtn" title="Remover">
+                    <i class="mdi mdi-delete-outline"></i>
+                  </button>
+                </div>
+              </div>
+              <h3 class="adminAtivTitle">{{ item.atividade.title }}</h3>
+              <p class="adminAtivDesc">{{ item.atividade.desc }}</p>
+              <span class="adminAtivQuestoes">
+                <i class="mdi mdi-help-circle-outline"></i>
+                {{ item.atividade.questoes.length }} questão{{ item.atividade.questoes.length > 1 ? 's' : '' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="adminSection">
+          <h2 class="sectionTitle">Adicionar Nova Atividade</h2>
+          <div class="addAtivCard">
+            <p class="addAtivPlaceholder">
+              <i class="mdi mdi-plus-circle-outline"></i>
+              Funcionalidade em desenvolvimento. Em breve será possível adicionar novas atividades.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div v-else key="login" class="profileCard">
@@ -135,7 +201,7 @@ function handleQuickLogin() {
         </div>
 
         <form class="loginForm" @submit.prevent="handleLogin">
-          <div class="field" :class="{ focused: false }">
+          <div class="field">
             <label for="email">
               <i class="mdi mdi-email-outline"></i>
               E-mail
@@ -276,53 +342,6 @@ function handleQuickLogin() {
   opacity: 0.5;
 }
 
-/* Avatar */
-.avatarSection {
-  position: relative;
-}
-
-.avatarRing {
-  padding: 3px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--color-navy-accent) 0%, var(--color-navy-lighter) 100%);
-  animation: ringPulse 3s ease-in-out infinite;
-}
-
-@keyframes ringPulse {
-  0%, 100% { box-shadow: 0 0 0 0 var(--color-navy-accent-muted); }
-  50% { box-shadow: 0 0 0 8px transparent; }
-}
-
-.avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: var(--radius-full);
-  background: var(--color-navy);
-  color: #ffffff;
-  font-size: var(--text-3xl);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.statusDot {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: var(--radius-full);
-  background: var(--color-success);
-  border: 3px solid var(--color-surface-2);
-  animation: statusBounce 2s ease-in-out infinite;
-}
-
-@keyframes statusBounce {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-}
-
 /* Login icon */
 .loginIconWrap {
   margin-bottom: var(--sp-2);
@@ -351,7 +370,7 @@ function handleQuickLogin() {
   animation: iconSpin 20s linear infinite reverse;
 }
 
-/* Profile info */
+/* Profile info (login card) */
 .profileInfo {
   text-align: center;
   position: relative;
@@ -402,96 +421,6 @@ function handleQuickLogin() {
   color: var(--color-text-5);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wider);
-}
-
-/* Profile details */
-.profileDetails {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-  width: 100%;
-}
-
-.detailRow {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-3);
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.detailRow:hover {
-  background: var(--color-surface-4);
-  transform: translateX(4px);
-}
-
-.detailIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  background: var(--color-navy-accent-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.detailIcon i {
-  font-size: 1.1rem;
-  color: var(--color-navy-accent);
-}
-
-.detailContent {
-  display: flex;
-  flex-direction: column;
-}
-
-.detailLabel {
-  font-size: var(--text-xs);
-  color: var(--color-text-5);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wider);
-}
-
-.detailValue {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-2);
-}
-
-/* Logout button */
-.logoutBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-3) var(--sp-6);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-3);
-  border: 1px solid var(--color-border-2);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-2);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-  width: 100%;
-  justify-content: center;
-  margin-top: var(--sp-2);
-}
-
-.logoutBtn:hover {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-  background: var(--color-danger-muted);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--color-danger-muted);
-}
-
-.logoutBtn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
 }
 
 /* Login form */
@@ -676,6 +605,346 @@ function handleQuickLogin() {
 .btn-icon-leave-to {
   opacity: 0;
   transform: scale(0.5);
+}
+
+/* Admin Panel */
+.adminView {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: var(--sp-8) var(--sp-6);
+}
+
+.adminHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-8);
+}
+
+.adminHeaderLeft {
+  flex: 1;
+}
+
+.adminUserInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-2);
+}
+
+.avatarRing {
+  padding: 3px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-navy-accent) 0%, var(--color-navy-lighter) 100%);
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--color-navy);
+  color: #ffffff;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adminUserText {
+  display: flex;
+  flex-direction: column;
+}
+
+.adminTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--color-text-1);
+  letter-spacing: var(--tracking-tight);
+  margin-bottom: var(--sp-1);
+}
+
+.adminTitle i {
+  color: var(--color-navy-accent);
+}
+
+.adminUserName {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-2);
+}
+
+.adminUserEmail {
+  font-size: var(--text-xs);
+  color: var(--color-text-5);
+}
+
+.adminSubtitle {
+  font-size: var(--text-base);
+  color: var(--color-text-4);
+}
+
+.logoutBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-2);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.logoutBtn:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: var(--color-danger-muted);
+}
+
+/* Stats */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-8);
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5) var(--sp-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-1);
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.statIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--color-navy-accent-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+
+.statCard:hover .statIcon {
+  transform: scale(1.1) rotate(-3deg);
+  background: var(--color-navy-accent);
+}
+
+.statIcon i {
+  font-size: 1.4rem;
+  color: var(--color-navy-accent);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.statCard:hover .statIcon i {
+  color: #ffffff;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.statValue {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--color-text-1);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-4);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  margin-top: var(--sp-1);
+}
+
+/* Sections */
+.adminSection {
+  margin-bottom: var(--sp-8);
+}
+
+.sectionTitle {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text-1);
+  margin-bottom: var(--sp-4);
+}
+
+.atividadesAdminList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.adminAtivCard {
+  padding: var(--sp-5) var(--sp-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-1);
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+
+.adminAtivCard:hover {
+  border-color: var(--color-border-2);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
+}
+
+.adminAtivHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-2);
+}
+
+.adminAtivMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-5);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+}
+
+.adminAtivAno {
+  color: var(--color-navy-accent);
+  font-weight: 600;
+}
+
+.adminAtivMeta i {
+  font-size: 0.7rem;
+}
+
+.adminAtivDisc {
+  font-weight: 600;
+}
+
+.adminAtivActions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.actionBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-2);
+  background: var(--color-surface-3);
+  color: var(--color-text-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.editBtn:hover {
+  border-color: var(--color-info);
+  color: var(--color-info);
+  background: var(--color-info-muted);
+}
+
+.deleteBtn:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: var(--color-danger-muted);
+}
+
+.adminAtivTitle {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-1);
+  margin-bottom: var(--sp-1);
+}
+
+.adminAtivDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-4);
+  line-height: var(--leading-normal);
+  margin-bottom: var(--sp-2);
+}
+
+.adminAtivQuestoes {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-5);
+}
+
+.adminAtivQuestoes i {
+  color: var(--color-navy-accent);
+}
+
+/* Add new card */
+.addAtivCard {
+  padding: var(--sp-8);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-2);
+  border: 2px dashed var(--color-border-2);
+  text-align: center;
+}
+
+.addAtivPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-5);
+}
+
+.addAtivPlaceholder i {
+  font-size: 1.2rem;
+  color: var(--color-navy-accent);
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .adminHeader {
+    flex-direction: column;
+  }
+
+  .adminUserInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+  }
+
+  .avatarRing .avatar {
+    width: 48px;
+    height: 48px;
+    font-size: var(--text-xl);
+  }
 }
 
 @media (max-width: 480px) {

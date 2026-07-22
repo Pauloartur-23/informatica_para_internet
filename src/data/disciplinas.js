@@ -424,3 +424,43 @@ export function getAtividade(disciplinaId, atividadeId) {
   const lista = getAtividades(disciplinaId)
   return lista.find((a) => a.id === Number(atividadeId)) || null
 }
+
+export function searchAtividades(query) {
+  if (!query || query.trim().length < 2) return []
+  const q = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const results = []
+
+  for (const [anoId, ano] of Object.entries(anos)) {
+    for (const disc of ano.disciplinas) {
+      const lista = getAtividades(disc.id)
+      for (const ativ of lista) {
+        const titleMatch = ativ.title
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .includes(q)
+        const descMatch = ativ.desc
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .includes(q)
+        const questMatch = ativ.questoes.some((qst) =>
+          qst.enunciado
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .includes(q),
+        )
+        if (titleMatch || descMatch || questMatch) {
+          results.push({
+            anoId: Number(anoId),
+            anoLabel: ano.label,
+            disciplina: disc,
+            atividade: ativ,
+          })
+        }
+      }
+    }
+  }
+  return results
+}

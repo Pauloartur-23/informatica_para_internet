@@ -64,12 +64,17 @@ function isActive(path) {
             <ThemeToggle />
             <RouterLink
               to="/perfil"
-              class="avatar"
+              class="avatarWrap"
               :title="auth.isLoggedIn ? auth.user?.email : 'Entrar'"
               @click="emit('close')"
             >
-              <template v-if="auth.isLoggedIn">{{ auth.user?.avatar || 'U' }}</template>
-              <template v-else><i class="mdi mdi-account-outline"></i></template>
+              <div class="avatarRing">
+                <div class="avatar">
+                  <template v-if="auth.isLoggedIn">{{ auth.user?.avatar || 'U' }}</template>
+                  <template v-else><i class="mdi mdi-account-outline"></i></template>
+                </div>
+              </div>
+              <div v-if="auth.isLoggedIn" class="statusDot"></div>
             </RouterLink>
           </div>
         </div>
@@ -250,26 +255,51 @@ function isActive(path) {
   justify-content: space-between;
 }
 
+.avatarWrap {
+  position: relative;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.avatarRing {
+  padding: 2px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-navy-accent) 0%, var(--color-navy-lighter) 100%);
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+
+.avatarWrap:hover .avatarRing {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px var(--color-navy-accent-muted);
+}
+
 .avatar {
   width: 34px;
   height: 34px;
   border-radius: var(--radius-full);
-  background: var(--color-navy-accent);
-  border: 1.5px solid var(--color-border-2);
+  background: var(--color-navy);
+  border: 2px solid var(--color-surface);
   color: #ffffff;
   font-size: var(--text-sm);
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-spring);
 }
 
-.avatar:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 0 3px var(--color-navy-accent-muted);
+.avatar i {
+  font-size: 1rem;
+}
+
+.statusDot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-success);
+  border: 2px solid var(--color-surface);
 }
 
 /* Transitions */
