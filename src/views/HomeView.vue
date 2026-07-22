@@ -1,7 +1,5 @@
 <script setup>
-import { useAuthStore } from '../stores/auth.js'
-
-const auth = useAuthStore()
+import { RouterLink } from 'vue-router'
 </script>
 
 <template>
@@ -21,28 +19,21 @@ const auth = useAuthStore()
         </div>
 
         <h1 class="heroTitle animate-fade-in-up delay-1">
-          Informática<br />
-          <span class="heroAccent">para Internet</span>
+          Informática para<br />
+          <span class="heroAccent">Internet</span>
         </h1>
 
         <p class="heroDesc animate-fade-in-up delay-2">
-          Plataforma de atividades escolares criada pela
-          <strong>Monitoria de Informática</strong> para o curso
-          <strong>Técnico em Informática</strong>.
+          Sistema que reúne todas as atividades, listas, projetos e materiais do
+          <strong>Curso Técnico em Informática</strong>. Qualquer aluno pode consultar
+          o conteúdo de forma gratuita, enquanto apenas professores possuem acesso
+          administrativo para gerenciar as atividades.
         </p>
 
-        <div class="heroActions animate-fade-in-up delay-3">
-          <RouterLink
-            to="/perfil"
-            class="btn btnPrimary"
-            @click="!auth.isLoggedIn && auth.quickLogin()"
-          >
-            <i :class="auth.isLoggedIn ? 'mdi mdi-account-outline' : 'mdi mdi-login'"></i>
-            {{ auth.isLoggedIn ? 'Meu Perfil' : 'Começar Agora' }}
-          </RouterLink>
-        </div>
-
-        
+        <RouterLink to="/anos" class="btn btnPrimary animate-fade-in-up delay-3">
+          <i class="mdi mdi-rocket-launch-outline"></i>
+          Começar Agora
+        </RouterLink>
       </div>
     </section>
   </div>
@@ -63,7 +54,6 @@ const auth = useAuthStore()
   overflow: hidden;
 }
 
-/* Background effects */
 .heroBg {
   position: absolute;
   inset: 0;
@@ -74,7 +64,7 @@ const auth = useAuthStore()
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
 .heroOrb1 {
@@ -123,7 +113,6 @@ const auth = useAuthStore()
   -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%);
 }
 
-/* Content */
 .heroInner {
   position: relative;
   z-index: 1;
@@ -150,7 +139,7 @@ const auth = useAuthStore()
 }
 
 .heroTitle {
-  font-size: var(--text-5xl);
+  font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 800;
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
@@ -169,7 +158,7 @@ const auth = useAuthStore()
   font-size: var(--text-lg);
   color: var(--color-text-3);
   line-height: var(--leading-relaxed);
-  max-width: 480px;
+  max-width: 520px;
   margin-bottom: var(--sp-10);
 }
 
@@ -178,14 +167,6 @@ const auth = useAuthStore()
   font-weight: 600;
 }
 
-.heroActions {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-12);
-}
-
-/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -197,7 +178,6 @@ const auth = useAuthStore()
   text-decoration: none;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
-  border: 1px solid transparent;
 }
 
 .btnPrimary {
@@ -215,39 +195,11 @@ const auth = useAuthStore()
   transform: translateY(0);
 }
 
-/* Features pills */
-.heroFeatures {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-6);
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.heroFeature {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  font-size: var(--text-sm);
-  color: var(--color-text-4);
-}
-
-.heroFeature i {
-  color: var(--color-success);
-  font-size: 1.1rem;
-}
-
-@media (max-width: 900px) {
-  .heroTitle {
-    font-size: var(--text-4xl);
-  }
-
-  .heroFeatures {
-    gap: var(--sp-4);
-  }
-}
-
 @media (max-width: 480px) {
+  .hero {
+    padding: var(--sp-10) var(--sp-6);
+  }
+
   .heroTitle {
     font-size: var(--text-3xl);
   }
@@ -256,9 +208,9 @@ const auth = useAuthStore()
     font-size: var(--text-base);
   }
 
-  .heroFeatures {
-    flex-direction: column;
-    gap: var(--sp-3);
+  .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>
