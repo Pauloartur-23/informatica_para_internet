@@ -10,6 +10,7 @@ import { RouterLink } from 'vue-router'
         <div class="heroOrb heroOrb2"></div>
         <div class="heroOrb heroOrb3"></div>
         <div class="heroGrid"></div>
+        <div class="heroDots"></div>
       </div>
 
       <div class="heroInner">
@@ -113,6 +114,16 @@ import { RouterLink } from 'vue-router'
   -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 70%);
 }
 
+.heroDots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--color-navy-accent) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.08;
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 70%);
+}
+
 .heroInner {
   position: relative;
   z-index: 1;
@@ -136,6 +147,24 @@ import { RouterLink } from 'vue-router'
   color: var(--color-navy-accent);
   margin-bottom: var(--sp-8);
   backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+
+.heroBadge::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  animation: shimmer 4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { left: -100%; }
+  50% { left: 100%; }
 }
 
 .heroTitle {
@@ -152,6 +181,7 @@ import { RouterLink } from 'vue-router'
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(74, 111, 165, 0.3));
 }
 
 .heroDesc {
@@ -183,12 +213,19 @@ import { RouterLink } from 'vue-router'
 .btnPrimary {
   background: var(--color-navy);
   color: #ffffff;
+  box-shadow: 0 4px 20px rgba(74, 111, 165, 0.3);
+  animation: btnGlow 3s ease-in-out infinite;
+}
+
+@keyframes btnGlow {
+  0%, 100% { box-shadow: 0 4px 20px rgba(74, 111, 165, 0.3); }
+  50% { box-shadow: 0 4px 32px rgba(74, 111, 165, 0.5); }
 }
 
 .btnPrimary:hover {
   background: var(--color-navy-light);
-  box-shadow: var(--shadow-glow-sm);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 40px rgba(74, 111, 165, 0.5);
+  transform: translateY(-3px);
 }
 
 .btnPrimary:active {

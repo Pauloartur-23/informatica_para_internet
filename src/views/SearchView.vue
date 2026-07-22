@@ -37,82 +37,109 @@ onMounted(() => {
 
 <template>
   <div class="searchView">
-    <div class="searchHeader animate-fade-in-up">
-      <h1 class="searchTitle">Buscar Atividades</h1>
-      <p class="searchSubtitle">Encontre atividades e conteúdos rapidamente.</p>
+    <div class="pageDeco">
+      <div class="pageDecoOrb pageDecoOrb1"></div>
+      <div class="pageDecoOrb pageDecoOrb2"></div>
+      <div class="pageDecoOrb pageDecoOrb3"></div>
+      <div class="pageDecoDots"></div>
+      <div class="pageDecoGrid"></div>
     </div>
 
-    <form class="searchBar animate-fade-in-up delay-1" @submit.prevent="doSearch">
-      <div class="searchInputWrap">
-        <i class="mdi mdi-magnify searchIcon"></i>
-        <input
-          v-model="searchQuery"
-          type="text"
-          class="searchInput"
-          placeholder="Buscar por título, descrição ou conteúdo..."
-          autofocus
-        />
-        <button
-          v-if="searchQuery"
-          type="button"
-          class="clearBtn"
-          @click="searchQuery = ''; router.replace({ query: {} })"
-        >
-          <i class="mdi mdi-close"></i>
-        </button>
+    <div class="searchContent">
+      <div class="searchHeader animate-fade-in-up">
+        <div class="searchIconBig">
+          <i class="mdi mdi-magnify"></i>
+        </div>
+        <h1 class="searchTitle">Buscar Atividades</h1>
+        <p class="searchSubtitle">Encontre atividades e conteúdos rapidamente.</p>
       </div>
-    </form>
 
-    <div v-if="hasSearched" class="searchResults animate-fade-in-up delay-2">
-      <p class="resultCount">
-        {{ results.length }} resultado{{ results.length !== 1 ? 's' : '' }} encontrado{{ results.length !== 1 ? 's' : '' }}
-      </p>
+      <form class="searchBar animate-fade-in-up delay-1" @submit.prevent="doSearch">
+        <div class="searchInputWrap">
+          <i class="mdi mdi-magnify searchIcon"></i>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="searchInput"
+            placeholder="Buscar por título, descrição ou conteúdo..."
+            autofocus
+          />
+          <button
+            v-if="searchQuery"
+            type="button"
+            class="clearBtn"
+            @click="searchQuery = ''; router.replace({ query: {} })"
+          >
+            <i class="mdi mdi-close"></i>
+          </button>
+          <button type="submit" class="submitBtn">
+            <i class="mdi mdi-arrow-right"></i>
+          </button>
+        </div>
+      </form>
 
-      <div v-if="results.length" class="resultsList">
-        <RouterLink
-          v-for="(r, idx) in results"
-          :key="`${r.disciplina.id}-${r.atividade.id}`"
-          :to="`/atividade/${r.disciplina.id}/${r.atividade.id}`"
-          class="resultCard animate-fade-in-up"
-          :class="`delay-${Math.min(idx + 1, 5)}`"
-        >
-          <div class="resultMeta">
-            <span class="resultAno">{{ r.anoLabel }}</span>
-            <i class="mdi mdi-chevron-right"></i>
-            <span class="resultDisc">{{ r.disciplina.name }}</span>
+      <div v-if="hasSearched" class="searchResults animate-fade-in-up delay-2">
+        <p class="resultCount">
+          {{ results.length }} resultado{{ results.length !== 1 ? 's' : '' }} encontrado{{ results.length !== 1 ? 's' : '' }}
+        </p>
+
+        <div v-if="results.length" class="resultsList">
+          <RouterLink
+            v-for="(r, idx) in results"
+            :key="`${r.disciplina.id}-${r.atividade.id}`"
+            :to="`/atividade/${r.disciplina.id}/${r.atividade.id}`"
+            class="resultCard animate-fade-in-up"
+            :class="`delay-${Math.min(idx + 1, 5)}`"
+          >
+            <div class="resultMeta">
+              <span class="resultAno">{{ r.anoLabel }}</span>
+              <i class="mdi mdi-chevron-right"></i>
+              <span class="resultDisc">{{ r.disciplina.name }}</span>
+            </div>
+            <h3 class="resultTitle">{{ r.atividade.title }}</h3>
+            <p class="resultDesc">{{ r.atividade.desc }}</p>
+            <div class="resultFooter">
+              <span class="resultQuestions">
+                <i class="mdi mdi-help-circle-outline"></i>
+                {{ r.atividade.questoes.length }} questão{{ r.atividade.questoes.length > 1 ? 's' : '' }}
+              </span>
+              <span class="resultLink">
+                Ver atividade
+                <i class="mdi mdi-arrow-right"></i>
+              </span>
+            </div>
+          </RouterLink>
+        </div>
+
+        <div v-else class="noResults">
+          <div class="emptyStateIcon">
+            <i class="mdi mdi-magnify-close"></i>
           </div>
-          <h3 class="resultTitle">{{ r.atividade.title }}</h3>
-          <p class="resultDesc">{{ r.atividade.desc }}</p>
-          <div class="resultFooter">
-            <span class="resultQuestions">
-              <i class="mdi mdi-help-circle-outline"></i>
-              {{ r.atividade.questoes.length }} questão{{ r.atividade.questoes.length > 1 ? 's' : '' }}
-            </span>
-            <span class="resultLink">
-              Ver atividade
-              <i class="mdi mdi-arrow-right"></i>
-            </span>
-          </div>
-        </RouterLink>
+          <h3>Nenhum resultado encontrado</h3>
+          <p>Tente buscar com outros termos ou verifique a ortografia.</p>
+        </div>
       </div>
 
-      <div v-else class="noResults">
-        <i class="mdi mdi-magnify-close"></i>
-        <h3>Nenhum resultado encontrado</h3>
-        <p>Tente buscar com outros termos ou verifique a ortografia.</p>
+      <div v-else class="searchEmpty animate-fade-in-up delay-2">
+        <div class="emptyStateIcon">
+          <i class="mdi mdi-magnify"></i>
+        </div>
+        <h3>Digite pelo menos 2 caracteres para buscar</h3>
+        <p>Pesquise por títulos de atividades, descrições ou conteúdo das questões.</p>
       </div>
-    </div>
-
-    <div v-else class="searchEmpty animate-fade-in-up delay-2">
-      <i class="mdi mdi-magnify"></i>
-      <h3>Digite pelo menos 2 caracteres para buscar</h3>
-      <p>Pesquise por títulos de atividades, descrições ou conteúdo das questões.</p>
     </div>
   </div>
 </template>
 
 <style scoped>
 .searchView {
+  position: relative;
+  min-height: calc(100vh - var(--header-h));
+}
+
+.searchContent {
+  position: relative;
+  z-index: 1;
   max-width: var(--max-w);
   margin: 0 auto;
   padding: var(--sp-8) var(--sp-6);
@@ -121,6 +148,34 @@ onMounted(() => {
 .searchHeader {
   text-align: center;
   margin-bottom: var(--sp-8);
+}
+
+.searchIconBig {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  background: var(--color-navy-accent-muted);
+  border: 1px solid var(--color-border-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--sp-5);
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.searchIconBig i {
+  font-size: 2rem;
+  color: var(--color-navy-accent);
+  transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.searchHeader:hover .searchIconBig {
+  transform: scale(1.08) rotate(-3deg);
+  box-shadow: 0 0 24px rgba(74, 111, 165, 0.2);
+}
+
+.searchHeader:hover .searchIconBig i {
+  transform: scale(1.1);
 }
 
 .searchTitle {
@@ -148,18 +203,24 @@ onMounted(() => {
   border-radius: var(--radius-lg);
   background: var(--color-surface-2);
   border: 1px solid var(--color-border-2);
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-spring);
 }
 
 .searchInputWrap:focus-within {
   border-color: var(--color-navy-accent);
-  box-shadow: 0 0 0 3px var(--color-navy-accent-muted);
+  box-shadow: 0 0 0 3px var(--color-navy-accent-muted), var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .searchIcon {
   font-size: 1.3rem;
   color: var(--color-text-5);
   flex-shrink: 0;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.searchInputWrap:focus-within .searchIcon {
+  color: var(--color-navy-accent);
 }
 
 .searchInput {
@@ -187,13 +248,35 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-fast) var(--ease-spring);
   flex-shrink: 0;
 }
 
 .clearBtn:hover {
-  background: var(--color-surface-4);
-  color: var(--color-text-1);
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+  transform: scale(1.1);
+}
+
+.submitBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--color-navy);
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-spring);
+  flex-shrink: 0;
+}
+
+.submitBtn:hover {
+  background: var(--color-navy-light);
+  transform: scale(1.08);
+  box-shadow: 0 0 16px rgba(74, 111, 165, 0.3);
 }
 
 .resultCount {
@@ -217,14 +300,49 @@ onMounted(() => {
   background: var(--color-surface-2);
   border: 1px solid var(--color-border-1);
   text-decoration: none;
-  transition: all var(--duration-fast) var(--ease-spring);
+  transition: all var(--duration-normal) var(--ease-spring);
+  position: relative;
+  overflow: hidden;
+}
+
+.resultCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--color-navy-accent), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.resultCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 160px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(74, 111, 165, 0.02), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
+  pointer-events: none;
 }
 
 .resultCard:hover {
   background: var(--color-surface-3);
-  border-color: var(--color-navy-accent);
-  transform: translateY(-3px) scale(1.01);
-  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-2);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md), 0 0 20px rgba(74, 111, 165, 0.05);
+}
+
+.resultCard:hover::before {
+  opacity: 1;
+}
+
+.resultCard:hover::after {
+  opacity: 1;
 }
 
 .resultMeta {
@@ -291,6 +409,10 @@ onMounted(() => {
   transition: all var(--duration-fast) var(--ease-out);
 }
 
+.resultLink i {
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+
 .resultCard:hover .resultLink i {
   transform: translateX(4px);
 }
@@ -305,9 +427,19 @@ onMounted(() => {
   padding: var(--sp-16) var(--sp-6);
 }
 
-.noResults i,
-.searchEmpty i {
-  font-size: 3rem;
+.emptyStateIcon {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-3);
+  border: 1px dashed var(--color-border-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyStateIcon i {
+  font-size: 2.2rem;
   color: var(--color-text-5);
 }
 

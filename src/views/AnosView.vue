@@ -18,56 +18,73 @@ const anosList = computed(() =>
 
 <template>
   <div class="anosView">
-    <div class="anosHeader animate-fade-in-up">
-      <button class="backBtn" @click="router.back()">
-        <i class="mdi mdi-arrow-left"></i>
-      </button>
-      <div class="anosHeaderText">
-        <h1 class="anosTitle">Atividades por Ano</h1>
-        <p class="anosDesc">Selecione um ano para ver todas as atividades e disciplinas do curso técnico.</p>
-      </div>
+    <div class="pageDeco">
+      <div class="pageDecoOrb pageDecoOrb1"></div>
+      <div class="pageDecoOrb pageDecoOrb2"></div>
+      <div class="pageDecoOrb pageDecoOrb3"></div>
+      <div class="pageDecoDots"></div>
+      <div class="pageDecoGrid"></div>
     </div>
 
-    <div class="anosList">
-      <RouterLink
-        v-for="(item, idx) in anosList"
-        :key="item.id"
-        :to="`/ano/${item.id}`"
-        class="anoCard animate-fade-in-up"
-        :class="`delay-${Math.min(idx + 1, 5)}`"
-      >
-        <div class="anoLeft">
-          <div class="anoNumber">{{ item.id }}º</div>
-          <div class="anoAccent"></div>
+    <div class="anosContent">
+      <div class="anosHeader animate-fade-in-up">
+        <button class="backBtn" @click="router.back()">
+          <i class="mdi mdi-arrow-left"></i>
+        </button>
+        <div class="anosHeaderText">
+          <h1 class="anosTitle">Atividades por Ano</h1>
+          <p class="anosDesc">Selecione um ano para ver todas as atividades e disciplinas do curso técnico.</p>
         </div>
+      </div>
 
-        <div class="anoContent">
-          <h2 class="anoLabel">{{ item.label }}</h2>
-          <p class="anoDesc">{{ item.desc }}</p>
-          <div class="anoMeta">
-            <span class="anoMetaItem">
-              <i class="mdi mdi-bookshelf"></i>
-              {{ item.disciplinas.length }} disciplina{{ item.disciplinas.length > 1 ? 's' : '' }}
-            </span>
-            <span class="anoMetaItem">
-              <i class="mdi mdi-file-document-outline"></i>
-              {{ item.totalAtiv }} atividade{{ item.totalAtiv > 1 ? 's' : '' }}
-            </span>
+      <div class="anosList">
+        <RouterLink
+          v-for="(item, idx) in anosList"
+          :key="item.id"
+          :to="`/ano/${item.id}`"
+          class="anoCard animate-fade-in-up"
+          :class="`delay-${Math.min(idx + 1, 5)}`"
+        >
+          <div class="anoLeft">
+            <div class="anoNumber">{{ item.id }}º</div>
+            <div class="anoAccent"></div>
           </div>
-        </div>
 
-        <div class="anoRight">
-          <div class="anoArrow">
-            <i class="mdi mdi-arrow-right"></i>
+          <div class="anoContent">
+            <h2 class="anoLabel">{{ item.label }}</h2>
+            <p class="anoDesc">{{ item.desc }}</p>
+            <div class="anoMeta">
+              <span class="metaItem">
+                <i class="mdi mdi-bookshelf"></i>
+                {{ item.disciplinas.length }} disciplina{{ item.disciplinas.length > 1 ? 's' : '' }}
+              </span>
+              <span class="metaItem">
+                <i class="mdi mdi-file-document-outline"></i>
+                {{ item.totalAtiv }} atividade{{ item.totalAtiv > 1 ? 's' : '' }}
+              </span>
+            </div>
           </div>
-        </div>
-      </RouterLink>
+
+          <div class="anoRight">
+            <div class="anoArrow">
+              <i class="mdi mdi-arrow-right"></i>
+            </div>
+          </div>
+        </RouterLink>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .anosView {
+  position: relative;
+  min-height: calc(100vh - var(--header-h));
+}
+
+.anosContent {
+  position: relative;
+  z-index: 1;
   max-width: var(--max-w);
   margin: 0 auto;
   padding: var(--sp-8) var(--sp-6);
@@ -78,27 +95,6 @@ const anosList = computed(() =>
   align-items: flex-start;
   gap: var(--sp-4);
   margin-bottom: var(--sp-10);
-}
-
-.backBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--color-surface-3);
-  border: 1px solid var(--color-border-2);
-  color: var(--color-text-3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.backBtn:hover {
-  background: var(--color-surface-4);
-  color: var(--color-text-1);
-  transform: translateX(-2px);
 }
 
 .anosHeaderText {
@@ -136,12 +132,46 @@ const anosList = computed(() =>
   text-decoration: none;
   transition: all var(--duration-normal) var(--ease-spring);
   overflow: hidden;
+  position: relative;
+}
+
+.anoCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--color-navy-accent), var(--color-navy-lighter));
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.anoCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(74, 111, 165, 0.03), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
+  pointer-events: none;
 }
 
 .anoCard:hover {
-  transform: translateX(6px);
-  box-shadow: var(--shadow-md);
+  transform: translateX(8px) translateY(-2px);
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(74, 111, 165, 0.06);
   border-color: var(--color-border-2);
+}
+
+.anoCard:hover::before {
+  opacity: 1;
+}
+
+.anoCard:hover::after {
+  opacity: 1;
 }
 
 .anoLeft {
@@ -163,21 +193,43 @@ const anosList = computed(() =>
   font-size: var(--text-2xl);
   font-weight: 900;
   color: var(--color-navy-accent);
-  transition: all var(--duration-fast) var(--ease-spring);
+  transition: all var(--duration-normal) var(--ease-spring);
+  position: relative;
+}
+
+.anoNumber::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, var(--color-navy-accent), transparent);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity var(--duration-fast) var(--ease-out);
 }
 
 .anoCard:hover .anoNumber {
   background: var(--color-navy-accent);
   color: #ffffff;
-  transform: scale(1.08) rotate(-3deg);
+  transform: scale(1.1) rotate(-4deg);
+  box-shadow: 0 0 24px rgba(74, 111, 165, 0.4);
+}
+
+.anoCard:hover .anoNumber::after {
+  opacity: 0.2;
 }
 
 .anoAccent {
   width: 4px;
   flex: 1;
   border-radius: 2px;
-  background: var(--color-navy-accent-muted);
-  opacity: 0.5;
+  background: linear-gradient(180deg, var(--color-navy-accent), transparent);
+  opacity: 0.3;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.anoCard:hover .anoAccent {
+  opacity: 0.7;
 }
 
 .anoContent {
@@ -207,19 +259,6 @@ const anosList = computed(() =>
   margin-top: var(--sp-1);
 }
 
-.anoMetaItem {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  font-size: var(--text-xs);
-  color: var(--color-text-5);
-}
-
-.anoMetaItem i {
-  font-size: 1rem;
-  color: var(--color-navy-accent);
-}
-
 .anoRight {
   display: flex;
   align-items: center;
@@ -235,13 +274,15 @@ const anosList = computed(() =>
   align-items: center;
   justify-content: center;
   color: var(--color-text-5);
-  transition: all var(--duration-fast) var(--ease-spring);
+  transition: all var(--duration-normal) var(--ease-spring);
+  flex-shrink: 0;
 }
 
 .anoCard:hover .anoArrow {
   background: var(--color-navy-accent);
   color: #ffffff;
-  transform: translateX(4px);
+  transform: translateX(6px);
+  box-shadow: 0 0 16px rgba(74, 111, 165, 0.3);
 }
 
 @media (max-width: 480px) {

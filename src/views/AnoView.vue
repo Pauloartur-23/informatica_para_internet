@@ -14,48 +14,72 @@ const disciplinas = computed(() => ano.value?.disciplinas || [])
 </script>
 
 <template>
-  <div v-if="ano" class="anoView">
-    <div class="anoHeader animate-fade-in-up">
-      <button class="backBtn" @click="router.back()">
-        <i class="mdi mdi-arrow-left"></i>
-      </button>
-      <div class="anoInfo">
-        <h1 class="anoTitle">{{ ano.label }}</h1>
-        <p class="anoDesc">{{ ano.desc }}</p>
+  <div class="anoView">
+    <div class="pageDeco">
+      <div class="pageDecoOrb pageDecoOrb1"></div>
+      <div class="pageDecoOrb pageDecoOrb2"></div>
+      <div class="pageDecoOrb pageDecoOrb3"></div>
+      <div class="pageDecoDots"></div>
+      <div class="pageDecoGrid"></div>
+    </div>
+
+    <div class="anoContent" v-if="ano">
+      <div class="anoHeader animate-fade-in-up">
+        <button class="backBtn" @click="router.back()">
+          <i class="mdi mdi-arrow-left"></i>
+        </button>
+        <div class="anoInfo">
+          <div class="breadcrumb">
+            <RouterLink to="/anos">Anos</RouterLink>
+            <i class="mdi mdi-chevron-right"></i>
+            <span>{{ ano.label }}</span>
+          </div>
+          <h1 class="anoTitle">{{ ano.label }}</h1>
+          <p class="anoDesc">{{ ano.desc }}</p>
+        </div>
+      </div>
+
+      <div class="disciplinasGrid">
+        <RouterLink
+          v-for="(disc, idx) in disciplinas"
+          :key="disc.id"
+          :to="`/disciplina/${anoId}/${disc.id}`"
+          class="disciplinaCard animate-fade-in-up"
+          :class="`delay-${Math.min(idx + 1, 5)}`"
+        >
+          <div class="discIcon">
+            <i :class="`mdi ${disc.icon}`"></i>
+          </div>
+          <div class="discContent">
+            <h2 class="discName">{{ disc.name }}</h2>
+          </div>
+          <i class="mdi mdi-chevron-right discArrow"></i>
+        </RouterLink>
       </div>
     </div>
 
-    <div class="disciplinasGrid">
-      <RouterLink
-        v-for="(disc, idx) in disciplinas"
-        :key="disc.id"
-        :to="`/disciplina/${anoId}/${disc.id}`"
-        class="disciplinaCard animate-fade-in-up"
-        :class="`delay-${Math.min(idx + 1, 5)}`"
-      >
-        <div class="discIcon">
-          <i :class="`mdi ${disc.icon}`"></i>
+    <div class="anoContent" v-else>
+      <div class="emptyState animate-fade-in-up">
+        <div class="emptyStateIcon">
+          <i class="mdi mdi-alert-circle-outline"></i>
         </div>
-        <div class="discContent">
-          <h2 class="discName">{{ disc.name }}</h2>
-        </div>
-        <i class="mdi mdi-chevron-right discArrow"></i>
-      </RouterLink>
-    </div>
-  </div>
-
-  <div v-else class="anoView">
-    <div class="emptyState animate-fade-in-up">
-      <i class="mdi mdi-alert-circle-outline"></i>
-      <h2>Ano não encontrado</h2>
-      <p>O ano solicitado não existe.</p>
-      <RouterLink to="/" class="backHome">Voltar ao início</RouterLink>
+        <h2>Ano não encontrado</h2>
+        <p>O ano solicitado não existe.</p>
+        <RouterLink to="/" class="backHome">Voltar ao início</RouterLink>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .anoView {
+  position: relative;
+  min-height: calc(100vh - var(--header-h));
+}
+
+.anoContent {
+  position: relative;
+  z-index: 1;
   max-width: var(--max-w);
   margin: 0 auto;
   padding: var(--sp-8) var(--sp-6);
@@ -66,27 +90,6 @@ const disciplinas = computed(() => ano.value?.disciplinas || [])
   align-items: flex-start;
   gap: var(--sp-4);
   margin-bottom: var(--sp-8);
-}
-
-.backBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--color-surface-3);
-  border: 1px solid var(--color-border-2);
-  color: var(--color-text-3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.backBtn:hover {
-  background: var(--color-surface-4);
-  color: var(--color-text-1);
-  transform: translateX(-2px);
 }
 
 .anoInfo {
@@ -122,15 +125,50 @@ const disciplinas = computed(() => ano.value?.disciplinas || [])
   background: var(--color-surface-2);
   border: 1px solid var(--color-border-1);
   text-decoration: none;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-spring);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.disciplinaCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--color-navy-accent), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.disciplinaCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 160px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(74, 111, 165, 0.02), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
+  pointer-events: none;
 }
 
 .disciplinaCard:hover {
   background: var(--color-surface-3);
   border-color: var(--color-border-2);
-  transform: translateX(4px);
-  box-shadow: var(--shadow-sm);
+  transform: translateX(6px) translateY(-1px);
+  box-shadow: var(--shadow-md), 0 0 20px rgba(74, 111, 165, 0.05);
+}
+
+.disciplinaCard:hover::before {
+  opacity: 1;
+}
+
+.disciplinaCard:hover::after {
+  opacity: 1;
 }
 
 .discIcon {
@@ -142,12 +180,13 @@ const disciplinas = computed(() => ano.value?.disciplinas || [])
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--duration-fast) var(--ease-spring);
+  transition: all var(--duration-normal) var(--ease-spring);
 }
 
 .disciplinaCard:hover .discIcon {
-  transform: scale(1.1) rotate(-3deg);
+  transform: scale(1.12) rotate(-4deg);
   background: var(--color-navy-accent);
+  box-shadow: 0 0 20px rgba(74, 111, 165, 0.35);
 }
 
 .discIcon i {
@@ -174,57 +213,13 @@ const disciplinas = computed(() => ano.value?.disciplinas || [])
 .discArrow {
   font-size: 1.2rem;
   color: var(--color-text-5);
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-spring);
   flex-shrink: 0;
 }
 
 .disciplinaCard:hover .discArrow {
   color: var(--color-navy-accent);
-  transform: translateX(4px);
-}
-
-.emptyState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-4);
-  text-align: center;
-  padding: var(--sp-20) var(--sp-6);
-}
-
-.emptyState i {
-  font-size: 3rem;
-  color: var(--color-text-5);
-}
-
-.emptyState h2 {
-  font-size: var(--text-xl);
-  font-weight: 700;
-  color: var(--color-text-1);
-}
-
-.emptyState p {
-  font-size: var(--text-base);
-  color: var(--color-text-4);
-}
-
-.backHome {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-3) var(--sp-6);
-  border-radius: var(--radius-md);
-  background: var(--color-navy);
-  color: #ffffff;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-decoration: none;
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.backHome:hover {
-  background: var(--color-navy-light);
-  transform: translateY(-2px);
+  transform: translateX(6px) scale(1.1);
 }
 
 @media (max-width: 480px) {

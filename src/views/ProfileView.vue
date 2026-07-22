@@ -90,8 +90,13 @@ function handleQuickLogin() {
 
 <template>
   <div class="profilePage">
-    <div class="profileGlow"></div>
-    <div class="profileGlow profileGlow2"></div>
+    <div class="pageDeco">
+      <div class="pageDecoOrb pageDecoOrb1"></div>
+      <div class="pageDecoOrb pageDecoOrb2"></div>
+      <div class="pageDecoOrb pageDecoOrb3"></div>
+      <div class="pageDecoDots"></div>
+      <div class="pageDecoGrid"></div>
+    </div>
 
     <Transition name="card-switch" mode="out-in">
       <div v-if="auth.isLoggedIn" key="logged" class="adminView">
@@ -119,21 +124,21 @@ function handleQuickLogin() {
         </div>
 
         <div class="statsGrid">
-          <div class="statCard">
+          <div class="statCard animate-fade-in-up delay-1">
             <div class="statIcon"><i class="mdi mdi-bookshelf"></i></div>
             <div class="statInfo">
               <span class="statValue">{{ stats.disciplinas }}</span>
               <span class="statLabel">Disciplinas</span>
             </div>
           </div>
-          <div class="statCard">
+          <div class="statCard animate-fade-in-up delay-2">
             <div class="statIcon"><i class="mdi mdi-file-document-multiple"></i></div>
             <div class="statInfo">
               <span class="statValue">{{ stats.atividades }}</span>
               <span class="statLabel">Atividades</span>
             </div>
           </div>
-          <div class="statCard">
+          <div class="statCard animate-fade-in-up delay-3">
             <div class="statIcon"><i class="mdi mdi-help-rhombus"></i></div>
             <div class="statInfo">
               <span class="statValue">{{ stats.questoes }}</span>
@@ -146,9 +151,10 @@ function handleQuickLogin() {
           <h2 class="sectionTitle">Todas as Atividades</h2>
           <div class="atividadesAdminList">
             <div
-              v-for="item in allAtividades"
+              v-for="(item, idx) in allAtividades"
               :key="`${item.disciplina.id}-${item.atividade.id}`"
-              class="adminAtivCard"
+              class="adminAtivCard animate-fade-in-up"
+              :class="`delay-${Math.min(idx + 1, 5)}`"
             >
               <div class="adminAtivHeader">
                 <div class="adminAtivMeta">
@@ -178,10 +184,11 @@ function handleQuickLogin() {
         <div class="adminSection">
           <h2 class="sectionTitle">Adicionar Nova Atividade</h2>
           <div class="addAtivCard">
-            <p class="addAtivPlaceholder">
+            <div class="addAtivIcon">
               <i class="mdi mdi-plus-circle-outline"></i>
-              Funcionalidade em desenvolvimento. Em breve será possível adicionar novas atividades.
-            </p>
+            </div>
+            <p class="addAtivText">Funcionalidade em desenvolvimento</p>
+            <p class="addAtivSubtext">Em breve será possível adicionar novas atividades.</p>
           </div>
         </div>
       </div>
@@ -265,42 +272,13 @@ function handleQuickLogin() {
 
 <style scoped>
 .profilePage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - var(--header-h) - 200px);
-  padding: var(--sp-6);
   position: relative;
-  overflow: hidden;
+  min-height: calc(100vh - var(--header-h));
 }
 
-.profileGlow {
-  position: absolute;
-  width: 400px;
-  height: 400px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--color-navy-accent-muted) 0%, transparent 70%);
-  top: 10%;
-  left: 20%;
-  animation: float 8s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.profileGlow2 {
-  top: auto;
-  bottom: 10%;
-  left: auto;
-  right: 20%;
-  animation-delay: -4s;
-  animation-duration: 10s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -20px) scale(1.05); }
-  66% { transform: translate(-20px, 15px) scale(0.95); }
-}
-
+/* =============================================
+   Login Card
+   ============================================= */
 .profileCard {
   position: relative;
   display: flex;
@@ -315,6 +293,7 @@ function handleQuickLogin() {
   min-width: 380px;
   max-width: 440px;
   width: 100%;
+  margin: var(--sp-16) auto;
   z-index: 1;
   animation: cardAppear 0.6s var(--ease-out) both;
 }
@@ -342,7 +321,6 @@ function handleQuickLogin() {
   opacity: 0.5;
 }
 
-/* Login icon */
 .loginIconWrap {
   margin-bottom: var(--sp-2);
 }
@@ -357,6 +335,13 @@ function handleQuickLogin() {
   align-items: center;
   justify-content: center;
   animation: iconSpin 20s linear infinite;
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.loginIconRing:hover {
+  transform: scale(1.05);
+  border-color: var(--color-navy-accent);
+  box-shadow: 0 0 24px rgba(74, 111, 165, 0.15);
 }
 
 @keyframes iconSpin {
@@ -370,7 +355,6 @@ function handleQuickLogin() {
   animation: iconSpin 20s linear infinite reverse;
 }
 
-/* Profile info (login card) */
 .profileInfo {
   text-align: center;
   position: relative;
@@ -389,20 +373,6 @@ function handleQuickLogin() {
   color: var(--color-text-4);
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  margin-top: var(--sp-3);
-  padding: var(--sp-1) var(--sp-3);
-  border-radius: var(--radius-full);
-  background: var(--color-success-muted);
-  color: var(--color-success);
-  font-size: var(--text-xs);
-  font-weight: 600;
-}
-
-/* Divider */
 .divider {
   width: 100%;
   height: 1px;
@@ -423,7 +393,6 @@ function handleQuickLogin() {
   letter-spacing: var(--tracking-wider);
 }
 
-/* Login form */
 .loginForm {
   display: flex;
   flex-direction: column;
@@ -461,7 +430,7 @@ function handleQuickLogin() {
   font-size: var(--text-sm);
   color: var(--color-text-1);
   outline: none;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-spring);
 }
 
 .field input::placeholder {
@@ -499,15 +468,32 @@ function handleQuickLogin() {
   font-weight: 600;
   color: #ffffff;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-spring);
   width: 100%;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.loginBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.5s var(--ease-out);
 }
 
 .loginBtn:hover {
   background: var(--color-navy-light);
-  box-shadow: var(--shadow-glow-sm);
+  box-shadow: 0 4px 20px rgba(74, 111, 165, 0.3);
   transform: translateY(-1px);
+}
+
+.loginBtn:hover::before {
+  left: 100%;
 }
 
 .loginBtn:active {
@@ -532,7 +518,7 @@ function handleQuickLogin() {
   font-weight: 600;
   color: var(--color-text-2);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-spring);
   width: 100%;
   justify-content: center;
 }
@@ -542,6 +528,7 @@ function handleQuickLogin() {
   color: var(--color-navy-accent);
   background: var(--color-navy-accent-muted);
   transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(74, 111, 165, 0.1);
 }
 
 .quickBtn:disabled {
@@ -550,65 +537,12 @@ function handleQuickLogin() {
   transform: none;
 }
 
-/* Card switch transition */
-.card-switch-enter-active {
-  transition: all 0.5s var(--ease-out);
-}
-
-.card-switch-leave-active {
-  transition: all 0.3s var(--ease-out);
-}
-
-.card-switch-enter-from {
-  opacity: 0;
-  transform: translateY(20px) scale(0.95);
-}
-
-.card-switch-leave-to {
-  opacity: 0;
-  transform: translateY(-20px) scale(0.95);
-}
-
-/* Error slide */
-.error-slide-enter-active {
-  transition: all 0.3s var(--ease-spring);
-}
-
-.error-slide-leave-active {
-  transition: all 0.2s var(--ease-out);
-}
-
-.error-slide-enter-from {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-.error-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
-}
-
-/* Button icon transition */
-.btn-icon-enter-active {
-  transition: all 0.2s var(--ease-spring);
-}
-
-.btn-icon-leave-active {
-  transition: all 0.1s ease-in;
-}
-
-.btn-icon-enter-from {
-  opacity: 0;
-  transform: scale(0.5);
-}
-
-.btn-icon-leave-to {
-  opacity: 0;
-  transform: scale(0.5);
-}
-
-/* Admin Panel */
+/* =============================================
+   Admin Panel
+   ============================================= */
 .adminView {
+  position: relative;
+  z-index: 1;
   max-width: var(--max-w);
   margin: 0 auto;
   padding: var(--sp-8) var(--sp-6);
@@ -638,6 +572,19 @@ function handleQuickLogin() {
   border-radius: var(--radius-full);
   background: linear-gradient(135deg, var(--color-navy-accent) 0%, var(--color-navy-lighter) 100%);
   flex-shrink: 0;
+  transition: all var(--duration-normal) var(--ease-spring);
+  animation: ringGlow 3s ease-in-out infinite;
+}
+
+@keyframes ringGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 111, 165, 0); }
+  50% { box-shadow: 0 0 12px 2px rgba(74, 111, 165, 0.2); }
+}
+
+.avatarRing:hover {
+  transform: scale(1.05) rotate(-3deg);
+  animation: none;
+  box-shadow: 0 0 20px rgba(74, 111, 165, 0.3);
 }
 
 .avatar {
@@ -671,6 +618,13 @@ function handleQuickLogin() {
 
 .adminTitle i {
   color: var(--color-navy-accent);
+  animation: crownPulse 2s ease-in-out infinite;
+}
+
+@keyframes crownPulse {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
 }
 
 .adminUserName {
@@ -701,7 +655,7 @@ function handleQuickLogin() {
   font-weight: 600;
   color: var(--color-text-2);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-spring);
   flex-shrink: 0;
 }
 
@@ -709,6 +663,8 @@ function handleQuickLogin() {
   border-color: var(--color-danger);
   color: var(--color-danger);
   background: var(--color-danger-muted);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(248, 113, 113, 0.1);
 }
 
 /* Stats */
@@ -727,29 +683,66 @@ function handleQuickLogin() {
   border-radius: var(--radius-lg);
   background: var(--color-surface-2);
   border: 1px solid var(--color-border-1);
-  transition: all var(--duration-fast) var(--ease-spring);
+  transition: all var(--duration-normal) var(--ease-spring);
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-navy-accent), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.statCard::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(74, 111, 165, 0.03), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+  pointer-events: none;
 }
 
 .statCard:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md), 0 0 20px rgba(74, 111, 165, 0.05);
+  border-color: var(--color-border-2);
+}
+
+.statCard:hover::before {
+  opacity: 1;
+}
+
+.statCard:hover::after {
+  opacity: 1;
 }
 
 .statIcon {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: var(--radius-md);
   background: var(--color-navy-accent-muted);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--duration-fast) var(--ease-spring);
+  transition: all var(--duration-normal) var(--ease-spring);
 }
 
 .statCard:hover .statIcon {
   transform: scale(1.1) rotate(-3deg);
   background: var(--color-navy-accent);
+  box-shadow: 0 0 20px rgba(74, 111, 165, 0.3);
 }
 
 .statIcon i {
@@ -787,13 +780,6 @@ function handleQuickLogin() {
   margin-bottom: var(--sp-8);
 }
 
-.sectionTitle {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  color: var(--color-text-1);
-  margin-bottom: var(--sp-4);
-}
-
 .atividadesAdminList {
   display: flex;
   flex-direction: column;
@@ -805,13 +791,31 @@ function handleQuickLogin() {
   border-radius: var(--radius-lg);
   background: var(--color-surface-2);
   border: 1px solid var(--color-border-1);
-  transition: all var(--duration-fast) var(--ease-spring);
+  transition: all var(--duration-normal) var(--ease-spring);
+  position: relative;
+  overflow: hidden;
+}
+
+.adminAtivCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--color-navy-accent), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
 }
 
 .adminAtivCard:hover {
   border-color: var(--color-border-2);
   transform: translateX(4px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm), 0 0 16px rgba(74, 111, 165, 0.03);
+}
+
+.adminAtivCard:hover::before {
+  opacity: 1;
 }
 
 .adminAtivHeader {
@@ -861,19 +865,25 @@ function handleQuickLogin() {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.actionBtn:hover {
+  transform: scale(1.1) translateY(-1px);
 }
 
 .editBtn:hover {
   border-color: var(--color-info);
   color: var(--color-info);
   background: var(--color-info-muted);
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.1);
 }
 
 .deleteBtn:hover {
   border-color: var(--color-danger);
   color: var(--color-danger);
   background: var(--color-danger-muted);
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.1);
 }
 
 .adminAtivTitle {
@@ -904,25 +914,124 @@ function handleQuickLogin() {
 
 /* Add new card */
 .addAtivCard {
-  padding: var(--sp-8);
+  padding: var(--sp-10);
   border-radius: var(--radius-lg);
   background: var(--color-surface-2);
   border: 2px dashed var(--color-border-2);
   text-align: center;
+  transition: all var(--duration-normal) var(--ease-spring);
+  position: relative;
+  overflow: hidden;
 }
 
-.addAtivPlaceholder {
+.addAtivCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--color-navy-accent-muted), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+  pointer-events: none;
+}
+
+.addAtivCard:hover {
+  border-color: var(--color-navy-accent);
+  transform: translateY(-2px);
+}
+
+.addAtivCard:hover::before {
+  opacity: 0.3;
+}
+
+.addAtivIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-3);
+  border: 1px dashed var(--color-border-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-2);
+  margin: 0 auto var(--sp-4);
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.addAtivCard:hover .addAtivIcon {
+  background: var(--color-navy-accent-muted);
+  border-color: var(--color-navy-accent);
+  transform: scale(1.1) rotate(-3deg);
+}
+
+.addAtivIcon i {
+  font-size: 1.8rem;
+  color: var(--color-navy-accent);
+}
+
+.addAtivText {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-2);
+  margin-bottom: var(--sp-1);
+}
+
+.addAtivSubtext {
   font-size: var(--text-sm);
   color: var(--color-text-5);
 }
 
-.addAtivPlaceholder i {
-  font-size: 1.2rem;
-  color: var(--color-navy-accent);
+/* Transitions */
+.card-switch-enter-active {
+  transition: all 0.5s var(--ease-out);
+}
+
+.card-switch-leave-active {
+  transition: all 0.3s var(--ease-out);
+}
+
+.card-switch-enter-from {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+}
+
+.card-switch-leave-to {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+
+.error-slide-enter-active {
+  transition: all 0.3s var(--ease-spring);
+}
+
+.error-slide-leave-active {
+  transition: all 0.2s var(--ease-out);
+}
+
+.error-slide-enter-from {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.error-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.btn-icon-enter-active {
+  transition: all 0.2s var(--ease-spring);
+}
+
+.btn-icon-leave-active {
+  transition: all 0.1s ease-in;
+}
+
+.btn-icon-enter-from {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.btn-icon-leave-to {
+  opacity: 0;
+  transform: scale(0.5);
 }
 
 @media (max-width: 768px) {
@@ -951,10 +1060,7 @@ function handleQuickLogin() {
   .profileCard {
     min-width: 0;
     padding: var(--sp-8) var(--sp-6);
-  }
-
-  .profileGlow {
-    display: none;
+    margin: var(--sp-10) var(--sp-4);
   }
 }
 </style>
