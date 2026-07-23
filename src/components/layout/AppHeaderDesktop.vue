@@ -44,6 +44,11 @@ onUnmounted(() => {
       </RouterLink>
 
       <div class="headerActions">
+        <RouterLink to="/criar-atividade" class="createBtn">
+          <i class="mdi mdi-plus-circle-outline"></i>
+          <span>Criar</span>
+        </RouterLink>
+
         <button class="searchBtn" aria-label="Buscar" @click="openSearch">
           <i class="mdi mdi-magnify"></i>
         </button>
@@ -162,6 +167,27 @@ onUnmounted(() => {
   gap: var(--sp-2);
   flex: 1;
   justify-content: flex-end;
+}
+
+.createBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-navy-accent);
+  background: var(--color-navy-accent-muted);
+  text-decoration: none;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.createBtn:hover {
+  background: var(--color-navy-accent);
+  color: #ffffff;
+  box-shadow: var(--shadow-glow-sm);
+  transform: translateY(-1px);
 }
 
 .homeBtn {

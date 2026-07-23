@@ -91,6 +91,16 @@ const anosList = Object.entries(anos).map(([id, ano]) => ({
           <div class="sidebarDivider"></div>
 
           <RouterLink
+            to="/criar-atividade"
+            class="sidebarLink sidebarLinkAccent"
+            :class="{ active: isActive('/criar-atividade') }"
+            @click="emit('close')"
+          >
+            <i class="mdi mdi-plus-circle-outline"></i>
+            Criar Atividade
+          </RouterLink>
+
+          <RouterLink
             to="/perfil"
             class="sidebarLink"
             :class="{ active: isActive('/perfil') }"
@@ -272,6 +282,31 @@ const anosList = Object.entries(anos).map(([id, ano]) => ({
 
 .sidebarLink.active::before {
   transform: translateY(-50%) scaleY(1);
+}
+
+.sidebarLinkAccent {
+  color: var(--color-navy-accent);
+  background: var(--color-navy-accent-muted);
+  font-weight: 600;
+}
+
+.sidebarLinkAccent:hover {
+  background: var(--color-navy-accent);
+  color: #ffffff;
+  padding-left: var(--sp-5);
+}
+
+.sidebarLinkAccent:hover i {
+  color: #ffffff;
+}
+
+.sidebarLinkAccent.active {
+  background: var(--color-navy-accent);
+  color: #ffffff;
+}
+
+.sidebarLinkAccent.active::before {
+  background: #ffffff;
 }
 
 .sidebarLinkSub {

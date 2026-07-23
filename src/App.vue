@@ -2,7 +2,6 @@
 import { RouterView, useRoute } from 'vue-router'
 import { computed } from 'vue'
 import AppHeader from './components/layout/AppHeader.vue'
-import AppFooter from './components/layout/AppFooter.vue'
 
 const route = useRoute()
 const pageKey = computed(() => route.fullPath)
@@ -19,7 +18,6 @@ const isHome = computed(() => route.name === 'home')
         </Transition>
       </RouterView>
     </main>
-    <AppFooter />
   </div>
 </template>
 

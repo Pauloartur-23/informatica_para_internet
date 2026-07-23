@@ -61,7 +61,62 @@ export const disciplinaDescricoes = {
   redes: 'Fundamentos de redes, protocolos TCP/IP, configuração de roteadores e segurança de rede.',
 }
 
-export const atividades = {}
+const STORAGE_KEY = 'sio-atividades'
+
+function loadAtividades() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
+function persistAtividades() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(atividades))
+}
+
+export const atividades = loadAtividades()
+
+export function addAtividade(disciplinaId, atividade) {
+  if (!atividades[disciplinaId]) {
+    atividades[disciplinaId] = []
+  }
+  const id = Date.now()
+  const newAtividade = { id, ...atividade }
+  atividades[disciplinaId].push(newAtividade)
+  persistAtividades()
+  return newAtividade
+}
+
+export function deleteAtividade(disciplinaId, atividadeId) {
+  const lista = atividades[disciplinaId]
+  if (!lista) return false
+  const idx = lista.findIndex((a) => a.id === Number(atividadeId))
+  if (idx === -1) return false
+  lista.splice(idx, 1)
+  persistAtividades()
+  return true
+}
+
+export function editAtividade(disciplinaId, atividadeId, updates) {
+  const lista = atividades[disciplinaId]
+  if (!lista) return null
+  const idx = lista.findIndex((a) => a.id === Number(atividadeId))
+  if (idx === -1) return null
+  Object.assign(lista[idx], updates)
+  persistAtividades()
+  return lista[idx]
+}
+
+export function getAnoIdByDisciplina(disciplinaId) {
+  for (const [anoId, ano] of Object.entries(anos)) {
+    if (ano.disciplinas.some((d) => d.id === disciplinaId)) {
+      return anoId
+    }
+  }
+  return null
+}
 
 export function getAno(anoId) {
   return anos[anoId] || null

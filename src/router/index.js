@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../stores/auth.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,6 +38,19 @@ const router = createRouter({
       component: () => import('../views/SearchView.vue'),
     },
     {
+      path: '/criar-atividade',
+      name: 'create-activity',
+      component: () => import('../views/CreateActivityView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/editar-atividade/:disciplinaId/:atividadeId',
+      name: 'edit-activity',
+      component: () => import('../views/CreateActivityView.vue'),
+      props: true,
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/perfil',
       name: 'profile',
       component: () => import('../views/ProfileView.vue'),
@@ -50,6 +64,15 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 }
   },
+})
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth) {
+    const auth = useAuthStore()
+    if (!auth.isLoggedIn) {
+      return { name: 'profile', query: { redirect: to.fullPath } }
+    }
+  }
 })
 
 export default router

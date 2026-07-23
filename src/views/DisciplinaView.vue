@@ -1,11 +1,13 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import {
   getDisciplina,
   getAtividades,
   disciplinaDescricoes,
+  deleteAtividade,
 } from '../data/disciplinas.js'
+import { useAuthStore } from '../stores/auth.js'
 
 const props = defineProps({
   anoId: { type: String, required: true },
@@ -13,10 +15,32 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const auth = useAuthStore()
 
 const disciplina = computed(() => getDisciplina(Number(props.anoId), props.disciplinaId))
 const desc = computed(() => disciplinaDescricoes[props.disciplinaId] || '')
 const atividades = computed(() => getAtividades(props.disciplinaId))
+
+const showDeleteModal = ref(false)
+const deletingAtividade = ref(null)
+
+function confirmDelete(ativ) {
+  deletingAtividade.value = ativ
+  showDeleteModal.value = true
+}
+
+function cancelDelete() {
+  showDeleteModal.value = false
+  deletingAtividade.value = null
+}
+
+function executeDelete() {
+  if (deletingAtividade.value) {
+    deleteAtividade(props.disciplinaId, deletingAtividade.value.id)
+    showDeleteModal.value = false
+    deletingAtividade.value = null
+  }
+}
 </script>
 
 <template>
@@ -59,7 +83,7 @@ const atividades = computed(() => getAtividades(props.disciplinaId))
             :to="`/atividade/${disciplinaId}/${ativ.id}`"
             class="atividadeLink"
           >
-            <div class="atividadeNumber">{{ String(ativ.id).padStart(2, '0') }}</div>
+            <div class="atividadeNumber">{{ String(idx + 1).padStart(2, '0') }}</div>
             <div class="atividadeContent">
               <h2 class="atividadeTitle">{{ ativ.title }}</h2>
               <p class="atividadeDesc">{{ ativ.desc }}</p>
@@ -72,6 +96,22 @@ const atividades = computed(() => getAtividades(props.disciplinaId))
             </div>
             <i class="mdi mdi-chevron-right atividadeArrow"></i>
           </RouterLink>
+          <div v-if="auth.isLoggedIn" class="atividadeActions">
+            <RouterLink
+              :to="`/editar-atividade/${disciplinaId}/${ativ.id}`"
+              class="actionBtnSmall editBtn"
+              title="Editar atividade"
+            >
+              <i class="mdi mdi-pencil-outline"></i>
+            </RouterLink>
+            <button
+              class="actionBtnSmall deleteBtn"
+              title="Excluir atividade"
+              @click.prevent="confirmDelete(ativ)"
+            >
+              <i class="mdi mdi-delete-outline"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -94,6 +134,31 @@ const atividades = computed(() => getAtividades(props.disciplinaId))
         <RouterLink to="/" class="backHome">Voltar ao início</RouterLink>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <Transition name="fade">
+      <div v-if="showDeleteModal" class="modalOverlay" @click.self="cancelDelete">
+        <div class="deleteModal animate-scale-in">
+          <div class="modalIcon">
+            <i class="mdi mdi-alert-circle-outline"></i>
+          </div>
+          <h3 class="modalTitle">Excluir atividade?</h3>
+          <p class="modalDesc">
+            Tem certeza que deseja excluir <strong>{{ deletingAtividade?.title }}</strong>?
+            Esta ação não pode ser desfeita.
+          </p>
+          <div class="modalActions">
+            <button class="modalBtn modalBtnCancel" @click="cancelDelete">
+              Cancelar
+            </button>
+            <button class="modalBtn modalBtnDelete" @click="executeDelete">
+              <i class="mdi mdi-delete-outline"></i>
+              Excluir
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -294,6 +359,156 @@ const atividades = computed(() => getAtividades(props.disciplinaId))
 .atividadeCard:hover .atividadeArrow {
   color: var(--color-navy-accent);
   transform: translateX(6px) scale(1.1);
+}
+
+.atividadeActions {
+  display: flex;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-6) var(--sp-4);
+}
+
+.actionBtnSmall {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-2);
+  background: var(--color-surface-3);
+  color: var(--color-text-4);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-spring);
+  text-decoration: none;
+}
+
+.actionBtnSmall:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.editBtn:hover {
+  border-color: var(--color-navy-accent);
+  color: var(--color-navy-accent);
+  background: var(--color-navy-accent-muted);
+}
+
+.deleteBtn:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: var(--color-danger-muted);
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+}
+
+.deleteModal {
+  width: 100%;
+  max-width: 400px;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-2);
+  box-shadow: var(--shadow-xl);
+  padding: var(--sp-8);
+  text-align: center;
+}
+
+.modalIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: var(--color-danger-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--sp-5);
+}
+
+.modalIcon i {
+  font-size: 2rem;
+  color: var(--color-danger);
+}
+
+.modalTitle {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-1);
+  margin-bottom: var(--sp-3);
+}
+
+.modalDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-4);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--sp-6);
+}
+
+.modalDesc strong {
+  color: var(--color-text-2);
+}
+
+.modalActions {
+  display: flex;
+  gap: var(--sp-3);
+}
+
+.modalBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-spring);
+  border: none;
+}
+
+.modalBtnCancel {
+  background: var(--color-surface-3);
+  color: var(--color-text-3);
+  border: 1px solid var(--color-border-2);
+}
+
+.modalBtnCancel:hover {
+  background: var(--color-surface-4);
+}
+
+.modalBtnDelete {
+  background: var(--color-danger);
+  color: #ffffff;
+}
+
+.modalBtnDelete:hover {
+  background: var(--color-danger-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+}
+
+.fade-enter-active {
+  transition: opacity 0.25s var(--ease-out);
+}
+
+.fade-leave-active {
+  transition: opacity 0.2s var(--ease-out);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 @media (max-width: 480px) {
